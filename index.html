@@ -1873,7 +1873,174 @@
             .countdown-blocks { flex-wrap: wrap; }
             .countdown-block { min-width: 70px; }
             .organizer-content { padding: 48px 24px; }
+            .news-grid { grid-template-columns: 1fr !important; }
         }
+
+        /* ============================================
+           NEWS / ACTUALITÉS
+        ============================================ */
+        #news {
+            padding: 120px 0;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr 1fr;
+            gap: 2px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            margin-top: 48px;
+        }
+
+        .news-card {
+            background: var(--bg2);
+            padding: 28px 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            transition: background 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .news-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--red);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s;
+        }
+        .news-card:hover { background: var(--bg3); }
+        .news-card:hover::before { transform: scaleX(1); }
+
+        /* Carte principale — plus grande */
+        .news-card.main {
+            padding: 36px 30px;
+        }
+
+        .news-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-mono);
+            font-size: 8px;
+            letter-spacing: 0.3em;
+            padding: 3px 8px;
+            border: 1px solid;
+            width: fit-content;
+        }
+        .news-tag.annonce  { color: var(--red);       border-color: rgba(204,17,17,0.45); }
+        .news-tag.combat   { color: var(--gold);      border-color: rgba(200,150,12,0.45); }
+        .news-tag.resultat { color: #00cc55;          border-color: rgba(0,204,85,0.35); }
+        .news-tag.silence  { color: var(--text-3);    border-color: rgba(85,85,85,0.45); }
+        .news-tag.alerte   { color: var(--red);       border-color: rgba(204,17,17,0.45);
+                             animation: tag-blink 1.4s step-end infinite; }
+        @keyframes tag-blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+
+        .news-date {
+            font-family: var(--font-mono);
+            font-size: 8px;
+            letter-spacing: 0.2em;
+            color: var(--text-3);
+        }
+
+        .news-title {
+            font-family: var(--font-display);
+            font-size: 22px;
+            letter-spacing: 0.04em;
+            color: var(--text);
+            line-height: 1.1;
+        }
+        .news-card.main .news-title { font-size: 30px; }
+
+        .news-body {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            color: var(--text-2);
+            line-height: 1.9;
+            flex: 1;
+        }
+
+        .news-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            font-family: var(--font-mono);
+            font-size: 8px;
+            letter-spacing: 0.15em;
+            color: var(--text-3);
+        }
+        .news-footer-sig { color: var(--red); }
+
+        /* ── POPUP TOAST ACTUALITÉ ── */
+        #news-popup {
+            position: fixed;
+            bottom: 90px; left: 24px;
+            z-index: 8990;
+            width: 300px;
+            background: rgba(8,5,5,0.96);
+            border: 1px solid rgba(204,17,17,0.5);
+            border-left: 3px solid var(--red);
+            padding: 14px 16px;
+            font-family: var(--font-mono);
+            backdrop-filter: blur(8px);
+            transform: translateX(-340px);
+            transition: transform 0.4s cubic-bezier(0.22,1,0.36,1);
+            pointer-events: none;
+        }
+        #news-popup.show {
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+        .popup-label {
+            font-size: 7px;
+            letter-spacing: 0.35em;
+            color: var(--red);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .popup-label::before {
+            content: '';
+            display: inline-block;
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--red);
+            animation: mb-pulse 1s ease-in-out infinite;
+        }
+        .popup-title {
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            color: var(--text);
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+        .popup-body {
+            font-size: 9px;
+            letter-spacing: 0.06em;
+            color: var(--text-3);
+            line-height: 1.7;
+        }
+        .popup-close {
+            position: absolute;
+            top: 8px; right: 10px;
+            font-size: 10px;
+            color: var(--text-3);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: var(--font-mono);
+            line-height: 1;
+        }
+        .popup-close:hover { color: var(--text); }
 
         /* ============================================
            MUSIC BAR
@@ -2017,6 +2184,7 @@
         </a>
         <ul class="nav-links" id="nav-links">
             <li><a href="#next-event">Prochain Event</a></li>
+            <li><a href="#news">Actualités</a></li>
             <li><a href="#rules">Règles</a></li>
             <li><a href="#roster">Roster</a></li>
             <li><a href="#organizer">Le Marteau</a></li>
@@ -2089,7 +2257,7 @@
             </div>
             <div class="hero-stat">
                 <div class="hero-stat-num">0</div>
-                <div class="hero-stat-label">Rounds — Fight to finish</div>
+                <div class="hero-stat-label">Rounds — Combat jusqu'au KO</div>
             </div>
             <div class="hero-stat">
                 <div class="hero-stat-num">100%</div>
@@ -2868,6 +3036,82 @@
     </section>
 
 
+    <!-- ===== NEWS / ACTUALITÉS ===== -->
+    <section id="news">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="label">Communiqués ISL</div>
+                <h2 class="section-title">ACTUALITÉS <span>UNDERGROUND</span></h2>
+                <p class="section-sub">Tout ce qui se passe dans l'ombre. Les annonces que personne d'autre ne fera.</p>
+            </div>
+
+            <div class="news-grid" id="news-grid">
+
+                <!-- CARTE PRINCIPALE -->
+                <div class="news-card main fade-in">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <span class="news-tag silence">// SILENCE RADIO</span>
+                        <span class="news-date">13 AVRIL 2026</span>
+                    </div>
+                    <div class="news-title">AUCUN COMBAT PRÉVU POUR L'INSTANT</div>
+                    <div class="news-body">
+                        L'ISL est en repos forcé. Les combattants récupèrent. Le Marteau observe.
+                        Rien n'est annoncé, rien n'est confirmé. Mais le silence ne dure jamais longtemps
+                        dans cette organisation. Le prochain event se prépare dans l'ombre —
+                        rejoins le Dark Chat pour ne pas le rater.
+                    </div>
+                    <div class="news-footer">
+                        <span>// ISL BULLETIN — LOS SANTOS</span>
+                        <span class="news-footer-sig">LE MARTEAU</span>
+                    </div>
+                </div>
+
+                <!-- CARTE 2 -->
+                <div class="news-card fade-in">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <span class="news-tag annonce">// ANNONCE</span>
+                        <span class="news-date">10 AVRIL 2026</span>
+                    </div>
+                    <div class="news-title">RECRUTEMENT COMBATTANTS OUVERT</div>
+                    <div class="news-body">
+                        L'ISL accepte de nouvelles candidatures. Niveau minimum : avoir les couilles de se battre.
+                        Contact via le canal #recrutement sur le Dark Chat. Le Marteau examine chaque profil personnellement.
+                    </div>
+                    <div class="news-footer">
+                        <span>// RECRUTEMENT</span>
+                        <span class="news-footer-sig">ACTIF</span>
+                    </div>
+                </div>
+
+                <!-- CARTE 3 -->
+                <div class="news-card fade-in">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <span class="news-tag resultat">// DERNIER RÉSULTAT</span>
+                        <span class="news-date">18 MARS 2026</span>
+                    </div>
+                    <div class="news-title">ISL NIGHT OF BLOOD II — RÉSULTATS</div>
+                    <div class="news-body">
+                        KOZLOV conserve sa ceinture. KO brutal — PETROV au sol, incapable de se relever.
+                        Silva bat Fernandez par soumission. Ambiance explosive — 47 spectateurs présents.
+                    </div>
+                    <div class="news-footer">
+                        <span>// EVENT PASSÉ</span>
+                        <span class="news-footer-sig">ARCHIVÉ</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- POPUP TOAST ACTUALITÉ -->
+    <div id="news-popup">
+        <button class="popup-close" id="popup-close">✕</button>
+        <div class="popup-label">// ISL — TRANSMISSION EN DIRECT</div>
+        <div class="popup-title" id="popup-title"></div>
+        <div class="popup-body" id="popup-body"></div>
+    </div>
+
     <!-- ===== INFORMATIONS HRP ===== -->
     <section id="informations" style="padding:120px 0; background:var(--bg2); border-top:1px solid var(--border-light);">
         <div style="max-width:900px; margin:0 auto; padding:0 40px;">
@@ -3024,7 +3268,7 @@
             hero_stats:[
               {num:"47",label:"Combats organisés"},
               {num:"23",label:"Combattants actifs"},
-              {num:"0",label:"Rounds — Fight to finish"},
+              {num:"0",label:"Rounds — Combat jusqu'au KO"},
               {num:"100%",label:"Underground — Non officiel"}
             ],
             ticker_items:[
@@ -3443,20 +3687,76 @@
         // ---- HERO FIRST VISIBLE ----
         document.querySelector('#hero .fade-in').classList.add('visible');
 
-        // ---- DATA LEAK — active pointer-events only when visible ----
+        // ---- DATA LEAK pointer-events sync ----
         (function() {
             const leak = document.getElementById('data-leak');
-            // Sync avec l'animation CSS (cycle 18s)
-            // Visible entre 23%-72% = ~4.1s à ~12.96s dans le cycle
             function syncLeak() {
                 const cycle = 18000;
                 const now = Date.now() % cycle;
                 const pct = now / cycle;
-                // visible entre 23% et 72%
                 const vis = (pct >= 0.23 && pct < 0.52) || (pct >= 0.65 && pct < 0.73);
                 leak.classList.toggle('visible', vis);
             }
             setInterval(syncLeak, 200);
+        })();
+
+        // ---- POPUP TOASTS ACTUALITÉS ----
+        (function() {
+            const TOASTS = [
+                {
+                    title: 'SILENCE RADIO — AUCUN COMBAT PLANIFIÉ',
+                    body: "L'ISL est en veille. Rien n'est annoncé. Rejoins le Dark Chat pour les prochaines infos."
+                },
+                {
+                    title: 'RECRUTEMENT OUVERT',
+                    body: 'Le Marteau accepte de nouveaux combattants. Canal #recrutement sur le Dark Chat.'
+                },
+                {
+                    title: 'KOZLOV CONSERVE SA CEINTURE',
+                    body: 'Night of Blood II — KO brutal. Le champion est toujours debout. Challenger suivant ?'
+                },
+                {
+                    title: 'DOSSIER CLASSIFIÉ DÉTECTÉ',
+                    body: 'Un fichier ISL niveau 5 circule. Accès restreint. Tu sais ce que tu fais ?'
+                },
+                {
+                    title: 'PROCHAIN EVENT — ISL NIGHT OF BLOOD III',
+                    body: 'Date non confirmée. Location secrète. Rejoins le canal #combats pour l\'annonce.'
+                }
+            ];
+
+            let toastIdx = 0;
+            const popup   = document.getElementById('news-popup');
+            const pTitle  = document.getElementById('popup-title');
+            const pBody   = document.getElementById('popup-body');
+            const pClose  = document.getElementById('popup-close');
+            let hideTimer = null;
+
+            function showToast(idx) {
+                const t = TOASTS[idx % TOASTS.length];
+                pTitle.textContent = t.title;
+                pBody.textContent  = t.body;
+                popup.classList.add('show');
+                clearTimeout(hideTimer);
+                hideTimer = setTimeout(hideToast, 6000);
+            }
+
+            function hideToast() {
+                popup.classList.remove('show');
+            }
+
+            pClose.addEventListener('click', function() {
+                hideToast();
+                clearTimeout(hideTimer);
+            });
+
+            // Premier toast après 8s, puis tous les 35s
+            setTimeout(function() {
+                showToast(toastIdx++);
+                setInterval(function() {
+                    showToast(toastIdx++);
+                }, 35000);
+            }, 8000);
         })();
 
         /* ============================================================
