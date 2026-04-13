@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISL — ADMIN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:      #050505;
+            --bg2:     #0d0d0d;
+            --bg3:     #141414;
+            --surface: #1a1a1a;
+            --border:  #2a2a2a;
+            --red:     #cc1111;
+            --red-hot: #ff2222;
+            --gold:    #c8960c;
+            --text:    #e8e4df;
+            --text-2:  #a09890;
+            --text-3:  #555;
+            --font-d:  'Bebas Neue', sans-serif;
+            --font-b:  'Barlow Condensed', sans-serif;
+            --font-m:  'IBM Plex Mono', monospace;
+        }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body { background:var(--bg); color:var(--text); font-family:var(--font-b); font-size:15px; }
+        a { color:inherit; text-decoration:none; }
+        input, textarea, select {
+            background:var(--bg2); border:1px solid var(--border);
+            color:var(--text); font-family:var(--font-b); font-size:14px;
+            padding:10px 14px; width:100%; outline:none; transition:border-color 0.2s;
+        }
+        input:focus, textarea:focus, select:focus { border-color:var(--red); }
+        textarea { resize:vertical; min-height:90px; }
+        label {
+            display:block; font-family:var(--font-m); font-size:10px;
+            letter-spacing:0.15em; color:var(--text-3); margin-bottom:6px;
+        }
+        .field { margin-bottom:18px; }
+        ::-webkit-scrollbar { width:4px; }
+        ::-webkit-scrollbar-track { background:var(--bg); }
+        ::-webkit-scrollbar-thumb { background:var(--red); }
+
+        /* =========================================================
+           LOGIN PAGE
+        ========================================================= */
+        #login-page {
+            min-height:100vh; display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            background:var(--bg);
+            background-image:repeating-linear-gradient(
+                -55deg, transparent, transparent 80px,
+                rgba(204,17,17,0.012) 80px, rgba(204,17,17,0.012) 81px
+            );
+        }
+        .login-box {
+            width:100%; max-width:380px; padding:0 24px;
+            display:flex; flex-direction:column; align-items:center; gap:0;
+        }
+        .login-logo {
+            font-family:var(--font-d); font-size:52px; letter-spacing:0.05em;
+            line-height:1; margin-bottom:4px;
+        }
+        .login-logo span { color:var(--red); }
+        .login-sub {
+            font-family:var(--font-m); font-size:10px; letter-spacing:0.25em;
+            color:var(--text-3); margin-bottom:40px; text-align:center;
+        }
+        .login-label {
+            font-family:var(--font-m); font-size:10px; letter-spacing:0.2em;
+            color:var(--text-3); margin-bottom:8px; align-self:flex-start;
+        }
+        #login-pw {
+            letter-spacing:0.15em; font-size:18px; font-family:var(--font-d);
+            border:1px solid var(--border); padding:14px 18px; width:100%;
+            background:var(--bg2); color:var(--text); outline:none;
+            margin-bottom:16px; transition:border-color 0.2s;
+        }
+        #login-pw:focus { border-color:var(--red); }
+        .login-btn {
+            width:100%; background:var(--red); color:#fff;
+            font-family:var(--font-d); font-size:20px; letter-spacing:0.1em;
+            border:none; padding:16px; cursor:pointer;
+            clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
+            transition:background 0.15s;
+        }
+        .login-btn:hover { background:var(--red-hot); }
+        #login-error {
+            font-family:var(--font-m); font-size:11px; letter-spacing:0.15em;
+            color:var(--red); margin-top:14px; text-align:center;
+            min-height:18px; transition:opacity 0.2s;
+        }
+
+        /* =========================================================
+           DASHBOARD LAYOUT
+        ========================================================= */
+        #dashboard { display:none; min-height:100vh; }
+
+        /* Topbar */
+        .topbar {
+            position:fixed; top:0; left:0; right:0; z-index:200;
+            height:60px; background:var(--bg2); border-bottom:2px solid var(--red);
+            display:flex; align-items:center; justify-content:space-between;
+            padding:0 24px;
+        }
+        .topbar-logo {
+            font-family:var(--font-d); font-size:22px; letter-spacing:0.12em;
+            display:flex; align-items:center; gap:10px;
+        }
+        .topbar-badge {
+            width:36px; height:36px; background:var(--red);
+            display:flex; align-items:center; justify-content:center;
+            font-size:14px; letter-spacing:0.05em;
+            clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+        }
+        .topbar-logo span { color:var(--red); }
+        .topbar-session {
+            font-family:var(--font-m); font-size:10px; letter-spacing:0.15em;
+            color:var(--text-3); display:flex; align-items:center; gap:16px;
+        }
+        .topbar-session::before {
+            content:''; width:6px; height:6px; background:var(--red);
+            border-radius:50%; animation:pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .logout-btn {
+            font-family:var(--font-m); font-size:10px; letter-spacing:0.15em;
+            color:var(--text-3); background:none; border:1px solid var(--border);
+            padding:6px 14px; cursor:pointer; transition:all 0.15s;
+        }
+        .logout-btn:hover { border-color:var(--red); color:var(--red); }
+
+        /* Sidebar */
+        .sidebar {
+            position:fixed; top:60px; left:0; bottom:0; width:220px;
+            background:var(--bg2); border-right:1px solid var(--border);
+            overflow-y:auto; z-index:100; padding:20px 0;
+        }
+        .sidebar-section {
+            font-family:var(--font-m); font-size:9px; letter-spacing:0.2em;
+            color:var(--text-3); padding:0 20px; margin-bottom:8px; margin-top:20px;
+        }
+        .sidebar-item {
+            display:flex; align-items:center; gap:10px;
+            padding:10px 20px; cursor:pointer;
+            font-family:var(--font-m); font-size:11px; letter-spacing:0.15em;
+            color:var(--text-2); transition:all 0.15s; border-left:2px solid transparent;
+            user-select:none;
+        }
+        .sidebar-item:hover { color:var(--text); background:rgba(204,17,17,0.04); }
+        .sidebar-item.active {
+            color:var(--red); border-left-color:var(--red);
+            background:rgba(204,17,17,0.06);
+        }
+        .sidebar-item-icon { font-size:14px; width:18px; text-align:center; }
+
+        /* Main */
+        .main-content {
+            margin-left:220px; margin-top:60px;
+            padding:32px 36px; min-height:calc(100vh - 60px);
+        }
+
+        /* =========================================================
+           TAB PANELS
+        ========================================================= */
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+
+        .panel-title {
+            font-family:var(--font-d); font-size:36px; letter-spacing:0.05em;
+            margin-bottom:6px;
+        }
+        .panel-title span { color:var(--red); }
+        .panel-sub {
+            font-family:var(--font-m); font-size:10px; letter-spacing:0.15em;
+            color:var(--text-3); margin-bottom:32px;
+        }
+
+        /* Grid helpers */
+        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+        .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+
+        /* Card block */
+        .card {
+            background:var(--bg2); border:1px solid var(--border);
+            padding:24px; margin-bottom:20px;
+        }
+        .card-title {
+            font-family:var(--font-m); font-size:10px; letter-spacing:0.2em;
+            color:var(--red); margin-bottom:18px; padding-bottom:10px;
+            border-bottom:1px solid var(--border);
+        }
+
+        /* Save btn */
+        .save-btn {
+            background:var(--red); color:#fff; font-family:var(--font-d);
+            font-size:18px; letter-spacing:0.1em; border:none;
+            padding:14px 40px; cursor:pointer; transition:background 0.15s;
+            clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+            margin-top:8px;
+        }
+        .save-btn:hover { background:var(--red-hot); }
+        .save-btn:disabled { background:var(--text-3); cursor:not-allowed; }
+
+        /* Toast */
+        .toast {
+            position:fixed; bottom:28px; right:28px; z-index:9999;
+            font-family:var(--font-m); font-size:12px; letter-spacing:0.15em;
+            padding:12px 22px; border-left:3px solid var(--red);
+            background:var(--bg2); border:1px solid var(--border);
+            border-left:3px solid var(--red);
+            opacity:0; transform:translateY(12px);
+            transition:all 0.25s; pointer-events:none;
+        }
+        .toast.ok  { border-left-color:#22cc44; }
+        .toast.err { border-left-color:var(--red); }
+        .toast.show { opacity:1; transform:translateY(0); }
+
+        /* Dynamic list rows */
+        .dyn-row {
+            display:flex; align-items:center; gap:10px;
+            background:var(--bg3); border:1px solid var(--border);
+            padding:10px 14px; margin-bottom:6px;
+        }
+        .dyn-row input { flex:1; margin-bottom:0; }
+        .dyn-btn-del {
+            background:none; border:1px solid var(--border);
+            color:var(--text-3); font-family:var(--font-m); font-size:12px;
+            padding:6px 10px; cursor:pointer; white-space:nowrap;
+            transition:all 0.15s; flex-shrink:0;
+        }
+        .dyn-btn-del:hover { border-color:var(--red); color:var(--red); }
+        .add-row-btn {
+            background:none; border:1px dashed var(--border);
+            color:var(--text-3); font-family:var(--font-m); font-size:11px;
+            letter-spacing:0.15em; padding:10px 18px; cursor:pointer;
+            width:100%; margin-top:4px; transition:all 0.15s;
+        }
+        .add-row-btn:hover { border-color:var(--red); color:var(--text); }
+
+        /* Fighter cards in admin */
+        .fighter-admin-card {
+            background:var(--bg3); border:1px solid var(--border);
+            border-left:2px solid var(--red); padding:16px 20px;
+            margin-bottom:8px; display:flex; align-items:center;
+            justify-content:space-between; gap:16px;
+        }
+        .fac-info { flex:1; }
+        .fac-name { font-family:var(--font-d); font-size:18px; letter-spacing:0.05em; }
+        .fac-meta { font-family:var(--font-m); font-size:10px; color:var(--text-3); margin-top:3px; }
+        .fac-btns { display:flex; gap:8px; }
+        .fac-btn {
+            font-family:var(--font-m); font-size:10px; letter-spacing:0.1em;
+            padding:6px 12px; border:1px solid var(--border);
+            background:none; color:var(--text-2); cursor:pointer; transition:all 0.15s;
+        }
+        .fac-btn:hover { border-color:var(--red); color:var(--red); }
+        .fac-btn.del:hover { border-color:#cc1111; color:#cc1111; }
+
+        /* Fighter form */
+        #fighter-form-wrap {
+            background:var(--bg2); border:1px solid var(--border);
+            border-top:2px solid var(--red); padding:24px; margin-top:16px;
+        }
+        #fighter-form-wrap h3 {
+            font-family:var(--font-d); font-size:22px; letter-spacing:0.05em;
+            margin-bottom:18px; color:var(--red);
+        }
+
+        /* Attr row */
+        .attr-row { display:flex; gap:10px; margin-bottom:8px; align-items:center; }
+        .attr-row input:first-child { flex:2; }
+        .attr-row input:last-of-type { flex:1; max-width:90px; }
+
+        /* Section divider */
+        .divider {
+            border:none; border-top:1px solid var(--border);
+            margin:24px 0;
+        }
+
+        /* Undercard row */
+        .uc-row {
+            display:grid; grid-template-columns:60px 1fr auto 1fr 140px 36px;
+            gap:8px; align-items:center; margin-bottom:8px;
+        }
+
+        /* Password change */
+        .pw-change-form { max-width:420px; }
+
+        /* Config info box */
+        .info-box {
+            background:rgba(204,17,17,0.04); border:1px solid rgba(204,17,17,0.2);
+            padding:18px 22px; margin-bottom:20px;
+        }
+        .info-box p {
+            font-family:var(--font-m); font-size:11px; line-height:1.9;
+            color:var(--text-2);
+        }
+        .info-box code {
+            background:var(--bg3); padding:2px 8px;
+            font-family:var(--font-m); color:var(--gold); font-size:11px;
+        }
+
+        @media(max-width:900px) {
+            .sidebar { width:56px; overflow:hidden; }
+            .sidebar-item { padding:12px 16px; }
+            .sidebar-item-icon { width:24px; }
+            .sidebar-section, .sidebar-item > span { display:none; }
+            .main-content { margin-left:56px; padding:20px 16px; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr; }
+            .uc-row { grid-template-columns:50px 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="login-page">
+    <div class="login-box">
+        <div class="login-logo">ISL <span>ADMIN</span></div>
+        <div class="login-sub">// IRON STREET LEAGUE — PANNEAU D'ADMINISTRATION</div>
+        <div class="login-label">MOT DE PASSE</div>
+        <input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password">
+        <button class="login-btn" onclick="tryLogin()">ACCÉDER</button>
+        <div id="login-error"></div>
+    </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard">
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-logo">
+            <div class="topbar-badge">ISL</div>
+            IRON <span>&nbsp;STREET&nbsp;</span> LEAGUE — ADMIN
+        </div>
+        <div class="topbar-session">
+            SESSION ACTIVE
+            <button class="logout-btn" onclick="doLogout()">DÉCONNEXION</button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-section">CONTENU</div>
+        <div class="sidebar-item active" onclick="switchTab('site')" id="nav-site">
+            <span class="sidebar-item-icon">⚙</span>
+            <span>SITE</span>
+        </div>
+        <div class="sidebar-item" onclick="switchTab('fighters')" id="nav-fighters">
+            <span class="sidebar-item-icon">✊</span>
+            <span>FIGHTERS</span>
+        </div>
+        <div class="sidebar-item" onclick="switchTab('event')" id="nav-event">
+            <span class="sidebar-item-icon">🗓</span>
+            <span>EVENT</span>
+        </div>
+        <div class="sidebar-item" onclick="switchTab('rules')" id="nav-rules">
+            <span class="sidebar-item-icon">📋</span>
+            <span>RÈGLES</span>
+        </div>
+        <div class="sidebar-item" onclick="switchTab('sergei')" id="nav-sergei">
+            <span class="sidebar-item-icon">👤</span>
+            <span>SERGEI</span>
+        </div>
+        <div class="sidebar-section">SYSTÈME</div>
+        <div class="sidebar-item" onclick="switchTab('settings')" id="nav-settings">
+            <span class="sidebar-item-icon">🔧</span>
+            <span>PARAMÈTRES</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- ======== TAB: SITE ======== -->
+        <div class="tab-panel active" id="tab-site">
+            <div class="panel-title">SITE <span>GLOBAL</span></div>
+            <div class="panel-sub">// TEXTES GÉNÉRAUX — NOM, SERVEUR, TAGLINES, STATS, TICKER, FOOTER</div>
+
+            <div class="card">
+                <div class="card-title">IDENTITÉ DU SITE</div>
+                <div class="grid-3">
+                    <div class="field">
+                        <label>NOM DU SITE</label>
+                        <input type="text" id="s-name">
+                    </div>
+                    <div class="field">
+                        <label>SIGLE (ACRONYME)</label>
+                        <input type="text" id="s-acronym">
+                    </div>
+                    <div class="field">
+                        <label>SERVEUR RP</label>
+                        <input type="text" id="s-server">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="field">
+                        <label>TAGLINE PRINCIPALE</label>
+                        <input type="text" id="s-tagline">
+                    </div>
+                    <div class="field">
+                        <label>SOUS-TITRE HERO</label>
+                        <input type="text" id="s-hero-subtitle">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">STATS DU HERO (4 CHIFFRES)</div>
+                <div id="hero-stats-rows"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">TICKER — MESSAGES DÉFILANTS</div>
+                <div id="ticker-rows"></div>
+                <button class="add-row-btn" onclick="addTickerRow('')">+ AJOUTER UN MESSAGE</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">FOOTER</div>
+                <div class="field">
+                    <label>TAGLINE FOOTER</label>
+                    <input type="text" id="s-footer-tagline">
+                </div>
+                <div class="field">
+                    <label>AVERTISSEMENT RP</label>
+                    <textarea id="s-footer-warning"></textarea>
+                </div>
+            </div>
+
+            <button class="save-btn" onclick="saveTab('site')">SAUVEGARDER</button>
+        </div>
+
+        <!-- ======== TAB: FIGHTERS ======== -->
+        <div class="tab-panel" id="tab-fighters">
+            <div class="panel-title">ROSTER <span>FIGHTERS</span></div>
+            <div class="panel-sub">// LISTE DES COMBATTANTS — AJOUTER, MODIFIER, SUPPRIMER</div>
+
+            <div class="card">
+                <div class="card-title">COMBATTANTS ACTUELS</div>
+                <div id="fighters-list"></div>
+            </div>
+
+            <div id="fighter-form-wrap">
+                <h3 id="fighter-form-title">AJOUTER UN COMBATTANT</h3>
+                <input type="hidden" id="f-edit-id">
+                <div class="grid-2">
+                    <div class="field"><label>NOM COMPLET</label><input type="text" id="f-name" placeholder="VASIL KOZLOV"></div>
+                    <div class="field"><label>SURNOM</label><input type="text" id="f-nickname" placeholder="The Butcher"></div>
+                </div>
+                <div class="grid-4">
+                    <div class="field"><label>NUMÉRO (#01)</label><input type="text" id="f-number" placeholder="#01"></div>
+                    <div class="field">
+                        <label>STATUT</label>
+                        <select id="f-status">
+                            <option value="actif">ACTIF</option>
+                            <option value="champion">CHAMPION</option>
+                            <option value="blessé">BLESSÉ</option>
+                            <option value="suspendu">SUSPENDU</option>
+                        </select>
+                    </div>
+                    <div class="field"><label>VICTOIRES (W)</label><input type="number" id="f-wins" min="0" value="0"></div>
+                    <div class="field"><label>DÉFAITES (L)</label><input type="number" id="f-losses" min="0" value="0"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="field"><label>KO</label><input type="number" id="f-ko" min="0" value="0"></div>
+                    <div class="field"><label>TAGS (séparés par virgule)</label><input type="text" id="f-tags" placeholder="CHAMPION, BARE KNUCKLE"></div>
+                </div>
+                <div style="display:flex;gap:12px;margin-top:8px;">
+                    <button class="save-btn" onclick="submitFighter()">VALIDER</button>
+                    <button class="save-btn" style="background:var(--bg3);border:1px solid var(--border);" onclick="cancelFighterEdit()">ANNULER</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======== TAB: EVENT ======== -->
+        <div class="tab-panel" id="tab-event">
+            <div class="panel-title">PROCHAIN <span>EVENT</span></div>
+            <div class="panel-sub">// FIGHT CARD — MAIN EVENT + UNDERCARD + DATE</div>
+
+            <div class="card">
+                <div class="card-title">INFORMATIONS DE L'EVENT</div>
+                <div class="grid-2">
+                    <div class="field"><label>NOM DE L'EVENT</label><input type="text" id="ev-name"></div>
+                    <div class="field"><label>BADGE (ex: ISL EXCLUSIVE)</label><input type="text" id="ev-badge"></div>
+                </div>
+                <div class="grid-3">
+                    <div class="field"><label>DATE &amp; HEURE</label><input type="datetime-local" id="ev-date"></div>
+                    <div class="field"><label>LIEU</label><input type="text" id="ev-location"></div>
+                    <div class="field"><label>INFO STREAM</label><input type="text" id="ev-stream"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">MAIN EVENT — FIGHTER 1 (CHAMPION)</div>
+                <div class="grid-4">
+                    <div class="field"><label>NOM</label><input type="text" id="me-f1-name-a"></div>
+                    <div class="field"><label>SURNOM</label><input type="text" id="me-f1-nick-a"></div>
+                    <div class="field"><label>RECORD (W-L-D)</label><input type="text" id="me-f1-rec-a"></div>
+                    <div class="field"><label>TAGS (virgule)</label><input type="text" id="me-f1-tags-a"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">MAIN EVENT — FIGHTER 2 (CHALLENGER)</div>
+                <div class="grid-4">
+                    <div class="field"><label>NOM</label><input type="text" id="me-f2-name-a"></div>
+                    <div class="field"><label>SURNOM</label><input type="text" id="me-f2-nick-a"></div>
+                    <div class="field"><label>RECORD (W-L-D)</label><input type="text" id="me-f2-rec-a"></div>
+                    <div class="field"><label>TAGS (virgule)</label><input type="text" id="me-f2-tags-a"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">UNDERCARD — COMBATS SUPPLÉMENTAIRES</div>
+                <div id="uc-rows"></div>
+                <button class="add-row-btn" onclick="addUcRow({num:'',fighter1:'',fighter2:'',type:'UNDERCARD'})">+ AJOUTER UN COMBAT</button>
+            </div>
+
+            <button class="save-btn" onclick="saveTab('event')">SAUVEGARDER</button>
+        </div>
+
+        <!-- ======== TAB: RÈGLES ======== -->
+        <div class="tab-panel" id="tab-rules">
+            <div class="panel-title">LES <span>RÈGLES</span></div>
+            <div class="panel-sub">// RÈGLES, CONDITIONS DE VICTOIRE, INTERDITS</div>
+
+            <div class="card">
+                <div class="card-title">EN-TÊTE DE SECTION</div>
+                <div class="grid-2">
+                    <div class="field"><label>TITRE DE SECTION</label><input type="text" id="r-title"></div>
+                    <div class="field"><label>TEXTE INTRO</label><input type="text" id="r-intro"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">RÈGLES (TITRE + DESCRIPTION)</div>
+                <div id="rules-rows"></div>
+                <button class="add-row-btn" onclick="addRuleRow({num:'0'+(rulesCount()+1),title:'',desc:''})">+ AJOUTER UNE RÈGLE</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">CONDITIONS DE VICTOIRE</div>
+                <div id="vc-rows"></div>
+                <button class="add-row-btn" onclick="addVcRow({icon:'',title:'',desc:''})">+ AJOUTER UNE CONDITION</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">ACTIONS INTERDITES</div>
+                <div id="forbidden-rows"></div>
+                <button class="add-row-btn" onclick="addForbiddenRow('')">+ AJOUTER UN INTERDIT</button>
+            </div>
+
+            <button class="save-btn" onclick="saveTab('rules')">SAUVEGARDER</button>
+        </div>
+
+        <!-- ======== TAB: SERGEI ======== -->
+        <div class="tab-panel" id="tab-sergei">
+            <div class="panel-title">SERGEI <span>ANTONOV</span></div>
+            <div class="panel-sub">// BIO, CITATION, ATTRIBUTS</div>
+
+            <div class="card">
+                <div class="card-title">IDENTITÉ</div>
+                <div class="grid-2">
+                    <div class="field"><label>NOM</label><input type="text" id="org-name-a"></div>
+                    <div class="field"><label>TITRE / RÔLE</label><input type="text" id="org-role-a"></div>
+                </div>
+                <div class="field"><label>BIOGRAPHIE</label><textarea id="org-bio-a" rows="5"></textarea></div>
+                <div class="field"><label>CITATION</label><textarea id="org-quote-a" rows="3"></textarea></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">ATTRIBUTS (NOM + VALEUR 0-100)</div>
+                <div id="attr-rows"></div>
+                <button class="add-row-btn" onclick="addAttrRow({label:'',value:50})">+ AJOUTER UN ATTRIBUT</button>
+            </div>
+
+            <button class="save-btn" onclick="saveTab('sergei')">SAUVEGARDER</button>
+        </div>
+
+        <!-- ======== TAB: SETTINGS ======== -->
+        <div class="tab-panel" id="tab-settings">
+            <div class="panel-title">PARA<span>MÈTRES</span></div>
+            <div class="panel-sub">// WATCH LIVE, SECTION REJOINDRE, MOT DE PASSE ADMIN</div>
+
+            <div class="card">
+                <div class="card-title">WATCH LIVE</div>
+                <div class="field"><label>TITRE</label><input type="text" id="w-title"></div>
+                <div class="field"><label>DESCRIPTION</label><textarea id="w-desc"></textarea></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">SECTION REJOINDRE — COMBATTANTS</div>
+                <div class="field"><label>TITRE FIGHTERS</label><input type="text" id="j-ftitle"></div>
+                <div class="field"><label>DESCRIPTION FIGHTERS</label><textarea id="j-fdesc"></textarea></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">SECTION REJOINDRE — SPECTATEURS</div>
+                <div class="field"><label>TITRE SPECTATEURS</label><input type="text" id="j-stitle"></div>
+                <div class="field"><label>DESCRIPTION SPECTATEURS</label><textarea id="j-sdesc"></textarea></div>
+            </div>
+
+            <button class="save-btn" onclick="saveTab('settings')" style="margin-bottom:32px;">SAUVEGARDER</button>
+
+            <hr class="divider">
+
+            <div class="panel-title" style="font-size:24px;">CHANGER LE <span>MOT DE PASSE</span></div>
+            <div class="panel-sub" style="margin-bottom:24px;">// ADMIN — HASHÉ SHA-256 CÔTÉ CLIENT</div>
+            <div class="pw-change-form">
+                <div class="field"><label>MOT DE PASSE ACTUEL</label><input type="password" id="pw-current"></div>
+                <div class="field"><label>NOUVEAU MOT DE PASSE</label><input type="password" id="pw-new"></div>
+                <div class="field"><label>CONFIRMER LE NOUVEAU</label><input type="password" id="pw-confirm"></div>
+                <button class="save-btn" onclick="changePassword()">CHANGER LE MOT DE PASSE</button>
+            </div>
+
+            <hr class="divider">
+
+            <div class="panel-title" style="font-size:24px;">JSONBIN <span>SETUP</span></div>
+            <div class="panel-sub" style="margin-bottom:16px;">// STOCKAGE DU CONTENU EN LIGNE</div>
+            <div class="info-box">
+                <p>
+                    1. Aller sur <code>jsonbin.io</code> → créer un compte gratuit<br>
+                    2. Cliquer sur <code>New Bin</code> → coller le contenu de <code>content-default.json</code><br>
+                    3. Copier le <code>BIN_ID</code> (dans l'URL) et la <code>X-Master-Key</code><br>
+                    4. Ouvrir <code>index.html</code> et <code>admin.html</code> → remplir le bloc <code>ISL_CONFIG</code> en haut du script<br>
+                    5. Redéployer sur Netlify par glisser-déposer<br><br>
+                    Mot de passe par défaut : <code>isl2026</code> — à changer immédiatement depuis cette page.
+                </p>
+            </div>
+        </div>
+
+    </div><!-- /main-content -->
+</div><!-- /dashboard -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+    /* ============================================================
+       CONFIG — même config que index.html
+    ============================================================ */
+    const ISL_CONFIG = {
+        BIN_ID:  '69dd0ebbaaba882197f4d011',
+        API_KEY: '$2a$10$qiESnFPpowC6V/7U/mROE.646R.qWsqrNR09LAIFQBBFAVQX1Bb96'
+    };
+
+    /* ============================================================
+       MOT DE PASSE — hash SHA-256 du mot de passe "isl2026"
+       Pour changer, modifier cette valeur avec le hash du nouveau mdp.
+       Le hash est mis à jour automatiquement depuis l'onglet Paramètres.
+    ============================================================ */
+    let ADMIN_HASH = '32d8d0984f450cc23a44d880f4a1f9fd9ef9d1f408e371e571e89604e732b09a';
+    // Hash SHA-256 de "isl2026"
+
+    /* ============================================================
+       SHA-256 via Web Crypto API
+    ============================================================ */
+    async function sha256(str) {
+        const buf  = await crypto.subtle.digest('SHA-256',
+            new TextEncoder().encode(str));
+        return Array.from(new Uint8Array(buf))
+            .map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    /* ============================================================
+       AUTH
+    ============================================================ */
+    async function tryLogin() {
+        const pw  = document.getElementById('login-pw').value;
+        const err = document.getElementById('login-error');
+        if (!pw) { err.textContent = 'ENTRER UN MOT DE PASSE'; return; }
+        const h = await sha256(pw);
+        if (h === ADMIN_HASH) {
+            sessionStorage.setItem('isl_admin', '1');
+            showDashboard();
+        } else {
+            err.textContent = '— ACCÈS REFUSÉ —';
+            document.getElementById('login-pw').value = '';
+            setTimeout(() => { err.textContent = ''; }, 3000);
+        }
+    }
+
+    document.getElementById('login-pw').addEventListener('keydown', e => {
+        if (e.key === 'Enter') tryLogin();
+    });
+
+    function doLogout() {
+        sessionStorage.removeItem('isl_admin');
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('login-page').style.display = 'flex';
+    }
+
+    function showDashboard() {
+        document.getElementById('login-page').style.display  = 'none';
+        document.getElementById('dashboard').style.display   = 'block';
+        loadAndPopulate();
+    }
+
+    /* Auto-login si session encore valide */
+    if (sessionStorage.getItem('isl_admin') === '1') showDashboard();
+
+    /* ============================================================
+       JSONBIN — LOAD / SAVE
+    ============================================================ */
+    let _data = null;
+
+    async function loadContent() {
+        if (!ISL_CONFIG.BIN_ID || !ISL_CONFIG.API_KEY) {
+            return getDefaultContent();
+        }
+        try {
+            const res = await fetch(
+                'https://api.jsonbin.io/v3/b/' + ISL_CONFIG.BIN_ID + '/latest',
+                { headers: { 'X-Master-Key': ISL_CONFIG.API_KEY } }
+            );
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const json = await res.json();
+            return json.record || getDefaultContent();
+        } catch(e) {
+            console.warn('[ISL Admin] JSONBin indisponible.', e);
+            return getDefaultContent();
+        }
+    }
+
+    async function saveContent(data) {
+        if (!ISL_CONFIG.BIN_ID || !ISL_CONFIG.API_KEY) {
+            console.warn('[ISL Admin] BIN_ID ou API_KEY manquant — contenu non sauvegardé sur JSONBin.');
+            return false;
+        }
+        try {
+            const res = await fetch(
+                'https://api.jsonbin.io/v3/b/' + ISL_CONFIG.BIN_ID,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': ISL_CONFIG.API_KEY
+                    },
+                    body: JSON.stringify(data)
+                }
+            );
+            return res.ok;
+        } catch(e) {
+            console.error('[ISL Admin] Erreur sauvegarde:', e);
+            return false;
+        }
+    }
+
+    async function loadAndPopulate() {
+        _data = await loadContent();
+        populateAll(_data);
+    }
+
+    /* ============================================================
+       TOAST
+    ============================================================ */
+    function showToast(msg, ok) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className   = 'toast ' + (ok ? 'ok' : 'err') + ' show';
+        setTimeout(() => { t.className = 'toast'; }, 3000);
+    }
+
+    /* ============================================================
+       TAB SWITCHING
+    ============================================================ */
+    function switchTab(name) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        document.getElementById('nav-' + name).classList.add('active');
+    }
+
+    /* ============================================================
+       HELPERS — DOM builders
+    ============================================================ */
+    function setHtml(el, html) {
+        if (!el) return;
+        el.textContent = '';
+        el.insertAdjacentHTML('beforeend', html);
+    }
+    function setHtmlById(id, html) { setHtml(document.getElementById(id), html); }
+    function val(id) { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+    function setVal(id, v) { const e = document.getElementById(id); if(e) e.value = (v||''); }
+    function setTextareaVal(id, v) { const e = document.getElementById(id); if(e) e.value = (v||''); }
+
+    /* ============================================================
+       POPULATE — remplit tous les onglets avec _data
+    ============================================================ */
+    function populateAll(d) {
+        populateSite(d.site   || {});
+        populateFighters(d.fighters || []);
+        populateEvent(d.event || {});
+        populateRules(d.rules || {});
+        populateSergei(d.organizer || {});
+        populateSettings(d);
+    }
+
+    /* SITE */
+    function populateSite(s) {
+        setVal('s-name',           s.name         || '');
+        setVal('s-acronym',        s.acronym       || '');
+        setVal('s-server',         s.server        || '');
+        setVal('s-tagline',        s.tagline        || '');
+        setVal('s-hero-subtitle',  s.hero_subtitle  || '');
+        setVal('s-footer-tagline', s.footer_tagline || '');
+        setTextareaVal('s-footer-warning', s.footer_warning || '');
+
+        /* Hero stats — 4 rows fixes */
+        const stats  = s.hero_stats || [{num:'',label:''},{num:'',label:''},{num:'',label:''},{num:'',label:''}];
+        const wrap   = document.getElementById('hero-stats-rows');
+        wrap.textContent = '';
+        stats.forEach((st, i) => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;gap:12px;margin-bottom:10px;align-items:center;';
+            row.insertAdjacentHTML('beforeend',
+                '<div style="flex:0 0 100px"><label>NOMBRE ' + (i+1) + '</label>'
+              + '<input type="text" id="hs-num-' + i + '" value="' + (st.num||'') + '"></div>'
+              + '<div style="flex:1"><label>LABEL ' + (i+1) + '</label>'
+              + '<input type="text" id="hs-lbl-' + i + '" value="' + (st.label||'') + '"></div>'
+            );
+            wrap.appendChild(row);
+        });
+
+        /* Ticker */
+        const tWrap = document.getElementById('ticker-rows');
+        tWrap.textContent = '';
+        (s.ticker_items || []).forEach(t => addTickerRow(t));
+    }
+
+    /* FIGHTERS list */
+    function populateFighters(fighters) {
+        const wrap = document.getElementById('fighters-list');
+        wrap.textContent = '';
+        if (!fighters.length) {
+            wrap.insertAdjacentHTML('beforeend',
+                '<div style="font-family:var(--font-m);font-size:11px;color:var(--text-3);padding:16px 0;">'
+              + 'Aucun combattant. Utilisez le formulaire ci-dessous pour en ajouter un.</div>'
+            );
+            return;
+        }
+        fighters.forEach(f => {
+            const card = document.createElement('div');
+            card.className = 'fighter-admin-card';
+            card.dataset.id = f.id;
+            card.insertAdjacentHTML('beforeend',
+                '<div class="fac-info">'
+              + '<div class="fac-name">' + f.number + ' — ' + f.name + '</div>'
+              + '<div class="fac-meta">"' + (f.nickname||'') + '" · '
+              + (f.status||'').toUpperCase() + ' · '
+              + (f.wins||0) + 'W / ' + (f.losses||0) + 'L / ' + (f.ko||0) + ' KO</div>'
+              + '</div>'
+              + '<div class="fac-btns">'
+              + '<button class="fac-btn" onclick="editFighter(\'' + f.id + '\')">ÉDITER</button>'
+              + '<button class="fac-btn del" onclick="deleteFighter(\'' + f.id + '\')">SUPPRIMER</button>'
+              + '</div>'
+            );
+            wrap.appendChild(card);
+        });
+    }
+
+    /* EVENT */
+    function populateEvent(ev) {
+        setVal('ev-name',     ev.name        || '');
+        setVal('ev-badge',    ev.badge       || '');
+        setVal('ev-location', ev.location    || '');
+        setVal('ev-stream',   ev.stream_info || '');
+        if (ev.date) {
+            const d   = new Date(ev.date);
+            const pad = n => String(n).padStart(2,'0');
+            setVal('ev-date',
+                d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate())
+                + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes())
+            );
+        }
+        const f1 = (ev.main_event || {}).fighter1 || {};
+        const f2 = (ev.main_event || {}).fighter2 || {};
+        setVal('me-f1-name-a', f1.name     || '');
+        setVal('me-f1-nick-a', f1.nickname || '');
+        setVal('me-f1-rec-a',  f1.record   || '');
+        setVal('me-f1-tags-a', (f1.tags||[]).join(', '));
+        setVal('me-f2-name-a', f2.name     || '');
+        setVal('me-f2-nick-a', f2.nickname || '');
+        setVal('me-f2-rec-a',  f2.record   || '');
+        setVal('me-f2-tags-a', (f2.tags||[]).join(', '));
+
+        const ucWrap = document.getElementById('uc-rows');
+        ucWrap.textContent = '';
+        (ev.undercard || []).forEach(u => addUcRow(u));
+    }
+
+    /* RULES */
+    function populateRules(r) {
+        setVal('r-title', r.section_title || '');
+        setVal('r-intro', r.intro         || '');
+
+        document.getElementById('rules-rows').textContent = '';
+        (r.items || []).forEach(item => addRuleRow(item));
+
+        document.getElementById('vc-rows').textContent = '';
+        (r.victory_conditions || []).forEach(v => addVcRow(v));
+
+        document.getElementById('forbidden-rows').textContent = '';
+        (r.forbidden || []).forEach(f => addForbiddenRow(f));
+    }
+
+    /* SERGEI */
+    function populateSergei(org) {
+        setVal('org-name-a', org.name  || '');
+        setVal('org-role-a', org.role  || '');
+        setTextareaVal('org-bio-a',   org.bio   || '');
+        setTextareaVal('org-quote-a', org.quote || '');
+
+        document.getElementById('attr-rows').textContent = '';
+        (org.attributes || []).forEach(a => addAttrRow(a));
+    }
+
+    /* SETTINGS */
+    function populateSettings(d) {
+        const w = d.watch || {};
+        setVal('w-title', w.title       || '');
+        setTextareaVal('w-desc', w.description || '');
+        const j = d.join || {};
+        setVal('j-ftitle', j.fighter_title    || '');
+        setTextareaVal('j-fdesc', j.fighter_desc || '');
+        setVal('j-stitle', j.spectator_title   || '');
+        setTextareaVal('j-sdesc', j.spectator_desc || '');
+    }
+
+    /* ============================================================
+       COLLECT — lit les formulaires et retourne les objets
+    ============================================================ */
+    function collectSite() {
+        const stats = [];
+        for (let i = 0; i < 4; i++) {
+            stats.push({
+                num:   val('hs-num-' + i),
+                label: val('hs-lbl-' + i)
+            });
+        }
+        const ticker = [];
+        document.querySelectorAll('#ticker-rows .dyn-row input').forEach(inp => {
+            if (inp.value.trim()) ticker.push(inp.value.trim());
+        });
+        return {
+            name:           val('s-name'),
+            acronym:        val('s-acronym'),
+            server:         val('s-server'),
+            tagline:        val('s-tagline'),
+            hero_subtitle:  val('s-hero-subtitle'),
+            hero_stats:     stats,
+            ticker_items:   ticker,
+            footer_tagline: val('s-footer-tagline'),
+            footer_warning: document.getElementById('s-footer-warning').value.trim()
+        };
+    }
+
+    function collectEvent() {
+        const tags = s => s.split(',').map(t=>t.trim()).filter(Boolean);
+        const undercard = [];
+        document.querySelectorAll('#uc-rows .uc-row').forEach(row => {
+            const inputs = row.querySelectorAll('input, select');
+            undercard.push({
+                num:      inputs[0] ? inputs[0].value : '',
+                fighter1: inputs[1] ? inputs[1].value : '',
+                fighter2: inputs[2] ? inputs[2].value : '',
+                type:     inputs[3] ? inputs[3].value : 'UNDERCARD'
+            });
+        });
+        return {
+            name:        val('ev-name'),
+            date:        val('ev-date'),
+            location:    val('ev-location'),
+            stream_info: val('ev-stream'),
+            badge:       val('ev-badge'),
+            main_event: {
+                fighter1: {
+                    name:     val('me-f1-name-a'),
+                    nickname: val('me-f1-nick-a'),
+                    record:   val('me-f1-rec-a'),
+                    tags:     tags(val('me-f1-tags-a'))
+                },
+                fighter2: {
+                    name:     val('me-f2-name-a'),
+                    nickname: val('me-f2-nick-a'),
+                    record:   val('me-f2-rec-a'),
+                    tags:     tags(val('me-f2-tags-a'))
+                }
+            },
+            undercard: undercard
+        };
+    }
+
+    function collectRules() {
+        const items = [];
+        document.querySelectorAll('#rules-rows .rule-edit-row').forEach(row => {
+            const ins = row.querySelectorAll('input');
+            items.push({ num: ins[0] ? ins[0].value : '', title: ins[1] ? ins[1].value : '', desc: ins[2] ? ins[2].value : '' });
+        });
+        const vc = [];
+        document.querySelectorAll('#vc-rows .vc-edit-row').forEach(row => {
+            const ins = row.querySelectorAll('input');
+            vc.push({ icon: ins[0] ? ins[0].value : '', title: ins[1] ? ins[1].value : '', desc: ins[2] ? ins[2].value : '' });
+        });
+        const forbidden = [];
+        document.querySelectorAll('#forbidden-rows .dyn-row input').forEach(inp => {
+            if (inp.value.trim()) forbidden.push(inp.value.trim());
+        });
+        return {
+            section_title:      val('r-title'),
+            intro:              val('r-intro'),
+            items:              items,
+            victory_conditions: vc,
+            forbidden:          forbidden
+        };
+    }
+
+    function collectSergei() {
+        const attrs = [];
+        document.querySelectorAll('#attr-rows .attr-row').forEach(row => {
+            const ins = row.querySelectorAll('input');
+            if (ins[0] && ins[1]) {
+                attrs.push({ label: ins[0].value.trim(), value: parseInt(ins[1].value) || 0 });
+            }
+        });
+        return {
+            name:       val('org-name-a'),
+            role:       val('org-role-a'),
+            bio:        document.getElementById('org-bio-a').value.trim(),
+            quote:      document.getElementById('org-quote-a').value.trim(),
+            attributes: attrs
+        };
+    }
+
+    function collectSettings() {
+        return {
+            watch: {
+                title:       val('w-title'),
+                description: document.getElementById('w-desc').value.trim()
+            },
+            join: {
+                fighter_title:    val('j-ftitle'),
+                fighter_desc:     document.getElementById('j-fdesc').value.trim(),
+                spectator_title:  val('j-stitle'),
+                spectator_desc:   document.getElementById('j-sdesc').value.trim()
+            }
+        };
+    }
+
+    /* ============================================================
+       SAVE TAB
+    ============================================================ */
+    async function saveTab(tab) {
+        if (!_data) return;
+        if (tab === 'site')     _data.site       = collectSite();
+        if (tab === 'event')    _data.event      = collectEvent();
+        if (tab === 'rules')    _data.rules      = collectRules();
+        if (tab === 'sergei')   _data.organizer  = collectSergei();
+        if (tab === 'settings') {
+            const s = collectSettings();
+            _data.watch = s.watch;
+            _data.join  = s.join;
+        }
+        const ok = await saveContent(_data);
+        if (ok) {
+            showToast('Sauvegardé ✓', true);
+        } else if (!ISL_CONFIG.BIN_ID) {
+            showToast('JSONBin non configuré — données en mémoire seulement', false);
+        } else {
+            showToast('Erreur de sauvegarde ✗', false);
+        }
+    }
+
+    /* ============================================================
+       FIGHTERS — CRUD
+    ============================================================ */
+    function editFighter(id) {
+        if (!_data) return;
+        const f = (_data.fighters || []).find(x => x.id === id);
+        if (!f) return;
+        document.getElementById('f-edit-id').value = f.id;
+        document.getElementById('fighter-form-title').textContent = 'MODIFIER : ' + f.name;
+        setVal('f-name',     f.name     || '');
+        setVal('f-nickname', f.nickname || '');
+        setVal('f-number',   f.number   || '');
+        setVal('f-status',   f.status   || 'actif');
+        setVal('f-wins',     f.wins     || 0);
+        setVal('f-losses',   f.losses   || 0);
+        setVal('f-ko',       f.ko       || 0);
+        setVal('f-tags',     (f.tags||[]).join(', '));
+        document.getElementById('fighter-form-wrap').scrollIntoView({behavior:'smooth'});
+    }
+
+    function deleteFighter(id) {
+        if (!_data) return;
+        if (!confirm('Supprimer ce combattant ?')) return;
+        _data.fighters = (_data.fighters || []).filter(x => x.id !== id);
+        populateFighters(_data.fighters);
+        saveTab('fighters_del');
+    }
+
+    async function saveTab_fighters_del() {
+        const ok = await saveContent(_data);
+        showToast(ok ? 'Combattant supprimé ✓' : 'Erreur ✗', ok);
+    }
+
+    function submitFighter() {
+        if (!_data) return;
+        const editId = val('f-edit-id');
+        const tags   = val('f-tags').split(',').map(t=>t.trim()).filter(Boolean);
+        const fObj   = {
+            id:       editId || String(Date.now()),
+            name:     val('f-name').toUpperCase(),
+            nickname: val('f-nickname'),
+            number:   val('f-number'),
+            status:   val('f-status'),
+            wins:     parseInt(val('f-wins'))   || 0,
+            losses:   parseInt(val('f-losses')) || 0,
+            ko:       parseInt(val('f-ko'))     || 0,
+            tags:     tags
+        };
+        if (!fObj.name) { showToast('Le nom est obligatoire', false); return; }
+
+        if (!_data.fighters) _data.fighters = [];
+        if (editId) {
+            const idx = _data.fighters.findIndex(x => x.id === editId);
+            if (idx > -1) _data.fighters[idx] = fObj;
+        } else {
+            _data.fighters.push(fObj);
+        }
+        populateFighters(_data.fighters);
+        cancelFighterEdit();
+        saveContent(_data).then(ok => showToast(ok ? 'Sauvegardé ✓' : 'JSONBin non configuré', ok));
+    }
+
+    function cancelFighterEdit() {
+        document.getElementById('f-edit-id').value = '';
+        document.getElementById('fighter-form-title').textContent = 'AJOUTER UN COMBATTANT';
+        ['f-name','f-nickname','f-number','f-tags'].forEach(id => setVal(id, ''));
+        setVal('f-status','actif');
+        setVal('f-wins',0); setVal('f-losses',0); setVal('f-ko',0);
+    }
+
+    /* ============================================================
+       DYNAMIC ROWS — Ticker
+    ============================================================ */
+    function addTickerRow(txt) {
+        const wrap = document.getElementById('ticker-rows');
+        const row  = document.createElement('div');
+        row.className = 'dyn-row';
+        row.insertAdjacentHTML('beforeend',
+            '<input type="text" value="' + esc(txt) + '" placeholder="Message défilant...">'
+          + '<button class="dyn-btn-del" onclick="this.parentElement.remove()">✕</button>'
+        );
+        wrap.appendChild(row);
+    }
+
+    /* Undercard rows */
+    function addUcRow(u) {
+        const wrap = document.getElementById('uc-rows');
+        const row  = document.createElement('div');
+        row.className = 'uc-row';
+        row.insertAdjacentHTML('beforeend',
+            '<input type="text" value="' + esc(u.num||'') + '" placeholder="#2" style="text-align:center;">'
+          + '<input type="text" value="' + esc(u.fighter1||'') + '" placeholder="FIGHTER 1">'
+          + '<input type="text" value="' + esc(u.fighter2||'') + '" placeholder="FIGHTER 2">'
+          + '<select style="padding:10px 8px;">'
+          + '<option' + (u.type==='CO-MAIN EVENT'?' selected':'') + '>CO-MAIN EVENT</option>'
+          + '<option' + (u.type==='DEBUT'?' selected':'') + '>DEBUT</option>'
+          + '<option' + (u.type==='UNDERCARD'||!u.type?' selected':'') + '>UNDERCARD</option>'
+          + '</select>'
+          + '<button class="dyn-btn-del" onclick="this.parentElement.remove()">✕</button>'
+        );
+        wrap.appendChild(row);
+    }
+
+    /* Rule rows */
+    function rulesCount() {
+        return document.querySelectorAll('#rules-rows .rule-edit-row').length;
+    }
+    function addRuleRow(r) {
+        const wrap = document.getElementById('rules-rows');
+        const row  = document.createElement('div');
+        row.className = 'rule-edit-row dyn-row';
+        row.style.display = 'grid';
+        row.style.gridTemplateColumns = '70px 1fr 2fr 36px';
+        row.style.gap = '8px';
+        row.insertAdjacentHTML('beforeend',
+            '<input type="text" value="' + esc(r.num||'') + '" placeholder="01" style="text-align:center;">'
+          + '<input type="text" value="' + esc(r.title||'') + '" placeholder="TITRE">'
+          + '<input type="text" value="' + esc(r.desc||'') + '" placeholder="Description">'
+          + '<button class="dyn-btn-del" onclick="this.parentElement.remove()">✕</button>'
+        );
+        wrap.appendChild(row);
+    }
+
+    /* Victory conditions */
+    function addVcRow(v) {
+        const wrap = document.getElementById('vc-rows');
+        const row  = document.createElement('div');
+        row.className = 'vc-edit-row dyn-row';
+        row.style.display = 'grid';
+        row.style.gridTemplateColumns = '70px 1fr 2fr 36px';
+        row.style.gap = '8px';
+        row.insertAdjacentHTML('beforeend',
+            '<input type="text" value="' + esc(v.icon||'') + '" placeholder="KO" style="text-align:center;">'
+          + '<input type="text" value="' + esc(v.title||'') + '" placeholder="TITRE">'
+          + '<input type="text" value="' + esc(v.desc||'') + '" placeholder="Description">'
+          + '<button class="dyn-btn-del" onclick="this.parentElement.remove()">✕</button>'
+        );
+        wrap.appendChild(row);
+    }
+
+    /* Forbidden rows */
+    function addForbiddenRow(txt) {
+        const wrap = document.getElementById('forbidden-rows');
+        const row  = document.createElement('div');
+        row.className = 'dyn-row';
+        row.insertAdjacentHTML('beforeend',
+            '<input type="text" value="' + esc(txt) + '" placeholder="Ex: Morsures">'
+          + '<button class="dyn-btn-del" onclick="this.parentElement.remove()">✕</button>'
+        );
+        wrap.appendChild(row);
+    }
+
+    /* Attribute rows */
+    function addAttrRow(a) {
+        const wrap = document.getElementById('attr-rows');
+        const row  = document.createElement('div');
+        row.className = 'attr-row';
+        row.insertAdjacentHTML('beforeend',
+            '<input type="text" value="' + esc(a.label||'') + '" placeholder="INFLUENCE">'
+          + '<input type="number" value="' + (a.value||0) + '" min="0" max="100">'
+          + '<button class="dyn-btn-del" onclick="this.parentElement.remove()">✕</button>'
+        );
+        wrap.appendChild(row);
+    }
+
+    /* ============================================================
+       CHANGE PASSWORD
+    ============================================================ */
+    async function changePassword() {
+        const cur  = document.getElementById('pw-current').value;
+        const nw   = document.getElementById('pw-new').value;
+        const conf = document.getElementById('pw-confirm').value;
+        if (!cur || !nw || !conf) { showToast('Tous les champs sont requis', false); return; }
+        if (nw !== conf)           { showToast('Les mots de passe ne correspondent pas', false); return; }
+        if (nw.length < 6)         { showToast('Mot de passe trop court (min 6 caractères)', false); return; }
+        const curHash = await sha256(cur);
+        if (curHash !== ADMIN_HASH) { showToast('Mot de passe actuel incorrect', false); return; }
+        ADMIN_HASH = await sha256(nw);
+        showToast('Mot de passe changé ✓ — Copiez le nouveau hash : ' + ADMIN_HASH, true);
+        document.getElementById('pw-current').value = '';
+        document.getElementById('pw-new').value     = '';
+        document.getElementById('pw-confirm').value = '';
+    }
+
+    /* ============================================================
+       ESCAPE HTML for inline attribute values
+    ============================================================ */
+    function esc(s) {
+        return String(s||'')
+            .replace(/&/g,'&amp;')
+            .replace(/"/g,'&quot;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;');
+    }
+
+    /* ============================================================
+       DEFAULT CONTENT (même que index.html)
+    ============================================================ */
+    function getDefaultContent() {
+        return {
+          site:{
+            name:"Iron Street League",acronym:"ISL",server:"FLASHFA RP",
+            tagline:"No Rules. No Mercy. No Limits.",hero_subtitle:"No rules. No mercy. No limits.",
+            nav_links:["Prochain Event","Règles","Roster","Sergei","Watch","Rejoindre"],
+            hero_stats:[{num:"47",label:"Combats organisés"},{num:"23",label:"Combattants actifs"},{num:"0",label:"Rounds — Fight to finish"},{num:"100%",label:"Underground — Non officiel"}],
+            ticker_items:["PROCHAIN EVENT — ISL NIGHT OF BLOOD III","VASIL KOZLOV DÉFEND SON TITRE","STREAM LIVE SUR ISL.GG","INSCRIPTIONS OUVERTES"],
+            footer_tagline:"Organisation de combats underground. Los Santos.",
+            footer_warning:"⚠ AVERTISSEMENT RP — Ce site est une fiction dans le cadre du serveur FLASHFA RP."
+          },
+          event:{
+            name:"ISL NIGHT OF BLOOD III",date:"2026-04-18T21:00:00",
+            location:"Los Santos — Location secrète",stream_info:"STREAM LIVE SUR ISL.GG",badge:"ISL EXCLUSIVE",
+            main_event:{
+              fighter1:{name:"VASIL KOZLOV",nickname:"The Butcher",record:"9-1-0",tags:["CHAMPION"]},
+              fighter2:{name:"DIMITRI VORONOV",nickname:"Iron Jaw",record:"6-0-1",tags:["CHALLENGER"]}
+            },
+            undercard:[{num:"#2",fighter1:"MARCOS SILVA",fighter2:"TONY FERNANDEZ",type:"CO-MAIN EVENT"}]
+          },
+          fighters:[
+            {id:"1",name:"VASIL KOZLOV",nickname:"The Butcher",number:"#01",status:"champion",wins:9,losses:1,ko:8,tags:["CHAMPION"]},
+            {id:"2",name:"DIMITRI VORONOV",nickname:"Iron Jaw",number:"#02",status:"actif",wins:6,losses:0,ko:4,tags:["CHALLENGER"]},
+            {id:"3",name:"MARCOS SILVA",nickname:"The Hammer",number:"#03",status:"actif",wins:7,losses:2,ko:5,tags:["VÉTÉRAN"]},
+            {id:"4",name:"TONY FERNANDEZ",nickname:"El Diablo",number:"#04",status:"actif",wins:4,losses:1,ko:3,tags:[]},
+            {id:"5",name:"JAKE MORRISON",nickname:"The Ghost",number:"#05",status:"actif",wins:2,losses:0,ko:2,tags:["DEBUT"]},
+            {id:"6",name:"RICKY SANTOS",nickname:"Pitbull",number:"#06",status:"blessé",wins:5,losses:3,ko:3,tags:["BLESSÉ"]}
+          ],
+          rules:{
+            section_title:"LES RÈGLES",intro:"L'ISL fonctionne sur un principe simple : finir le combat.",
+            items:[
+              {num:"01",title:"PAS DE ROUNDS",desc:"Le combat continue jusqu'à un résultat définitif."},
+              {num:"02",title:"BARE KNUCKLE",desc:"Mains nues ou bandages légers autorisés."},
+              {num:"03",title:"GROUND & POUND",desc:"Les frappes au sol sont autorisées."},
+              {num:"04",title:"PAS DE CATÉGORIES",desc:"Aucune catégorie de poids."},
+              {num:"05",title:"COIN — ABANDON",desc:"Seul le combattant ou son corner peut arrêter."},
+              {num:"06",title:"RESPECT DU RÉSULTAT",desc:"Résultat définitif, aucune contestation."}
+            ],
+            victory_conditions:[
+              {icon:"KO",title:"KNOCKOUT",desc:"L'adversaire est inconscient."},
+              {icon:"TKO",title:"TECH. KO",desc:"Le combattant ne peut plus se défendre."},
+              {icon:"TAP",title:"SUBMISSION",desc:"Tap out verbal ou physique."},
+              {icon:"⌀",title:"CORNER STOP",desc:"Serviette lancée."}
+            ],
+            forbidden:["Morsures","Coups aux yeux","Coups à la gorge","Armes cachées"]
+          },
+          organizer:{
+            name:"SERGEI ANTONOV",role:"FONDATEUR & ORGANISATEUR — IRON STREET LEAGUE",
+            bio:"Sergei Antonov. Un nom que l'on murmure dans les ruelles de Los Santos.",
+            quote:"Les règles sont faites pour ceux qui ont peur de perdre.",
+            attributes:[{label:"INFLUENCE",value:92},{label:"DANGEROSITÉ",value:97},{label:"RÉSEAU",value:88},{label:"MYSTÈRE",value:100}]
+          },
+          watch:{title:"WATCH LIVE",description:"Les combats ISL sont diffusés en live sur ce site."},
+          join:{fighter_title:"DEVENIR COMBATTANT",fighter_desc:"",spectator_title:"ASSISTER EN SPECTATEUR",spectator_desc:""}
+        };
+    }
+</script>
+</body>
+</html>

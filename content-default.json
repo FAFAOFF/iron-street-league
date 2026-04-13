@@ -1,0 +1,202 @@
+{
+  "site": {
+    "name": "Iron Street League",
+    "acronym": "ISL",
+    "server": "FLASHFA RP",
+    "tagline": "No Rules. No Mercy. No Limits.",
+    "hero_subtitle": "No rules. No mercy. No limits.",
+    "nav_links": ["Prochain Event", "Règles", "Roster", "Sergei", "Watch", "Rejoindre"],
+    "hero_stats": [
+      { "num": "47",   "label": "Combats organisés" },
+      { "num": "23",   "label": "Combattants actifs" },
+      { "num": "0",    "label": "Rounds — Fight to finish" },
+      { "num": "100%", "label": "Underground — Non officiel" }
+    ],
+    "ticker_items": [
+      "PROCHAIN EVENT — ISL NIGHT OF BLOOD III",
+      "VASIL KOZLOV DÉFEND SON TITRE FACE À DIMITRI VORONOV",
+      "STREAM LIVE SUR ISL.GG — REJOIGNEZ LE DARK CHAT #COMBATS",
+      "INSCRIPTIONS OUVERTES POUR LES NOUVEAUX COMBATTANTS",
+      "L'ISL NE RECONNAÎT AUCUNE AUTORITÉ — SEUL LE COMBAT COMPTE"
+    ],
+    "footer_tagline": "Organisation de combats underground. Los Santos.",
+    "footer_warning": "⚠ AVERTISSEMENT RP — Ce site est une fiction dans le cadre du serveur FLASHFA RP. Toute ressemblance avec des événements réels est purement fictive."
+  },
+  "event": {
+    "name": "ISL NIGHT OF BLOOD III",
+    "date": "2026-04-18T21:00:00",
+    "location": "Los Santos — Location secrète",
+    "stream_info": "STREAM LIVE SUR ISL.GG",
+    "badge": "ISL EXCLUSIVE",
+    "main_event": {
+      "fighter1": {
+        "name": "VASIL KOZLOV",
+        "nickname": "The Butcher",
+        "record": "9-1-0",
+        "tags": ["CHAMPION"]
+      },
+      "fighter2": {
+        "name": "DIMITRI VORONOV",
+        "nickname": "Iron Jaw",
+        "record": "6-0-1",
+        "tags": ["CHALLENGER"]
+      }
+    },
+    "undercard": [
+      { "num": "#2", "fighter1": "MARCOS SILVA",  "fighter2": "TONY FERNANDEZ", "type": "CO-MAIN EVENT" },
+      { "num": "#3", "fighter1": "JAKE MORRISON",  "fighter2": "CHEN WEI",        "type": "DEBUT" },
+      { "num": "#4", "fighter1": "RICKY SANTOS",   "fighter2": "OMAR HASSAN",     "type": "UNDERCARD" }
+    ]
+  },
+  "fighters": [
+    {
+      "id": "1",
+      "name": "VASIL KOZLOV",
+      "nickname": "The Butcher",
+      "number": "#01",
+      "status": "champion",
+      "wins": 9, "losses": 1, "ko": 8,
+      "tags": ["CHAMPION", "BARE KNUCKLE"]
+    },
+    {
+      "id": "2",
+      "name": "DIMITRI VORONOV",
+      "nickname": "Iron Jaw",
+      "number": "#02",
+      "status": "actif",
+      "wins": 6, "losses": 0, "ko": 4,
+      "tags": ["INVAINCU", "CHALLENGER"]
+    },
+    {
+      "id": "3",
+      "name": "MARCOS SILVA",
+      "nickname": "The Hammer",
+      "number": "#03",
+      "status": "actif",
+      "wins": 7, "losses": 2, "ko": 5,
+      "tags": ["VÉTÉRAN"]
+    },
+    {
+      "id": "4",
+      "name": "TONY FERNANDEZ",
+      "nickname": "El Diablo",
+      "number": "#04",
+      "status": "actif",
+      "wins": 4, "losses": 1, "ko": 3,
+      "tags": ["POIDS LOURD"]
+    },
+    {
+      "id": "5",
+      "name": "JAKE MORRISON",
+      "nickname": "The Ghost",
+      "number": "#05",
+      "status": "actif",
+      "wins": 2, "losses": 0, "ko": 2,
+      "tags": ["DEBUT"]
+    },
+    {
+      "id": "6",
+      "name": "RICKY SANTOS",
+      "nickname": "Pitbull",
+      "number": "#06",
+      "status": "blessé",
+      "wins": 5, "losses": 3, "ko": 3,
+      "tags": ["BLESSÉ"]
+    }
+  ],
+  "rules": {
+    "section_title": "LES RÈGLES",
+    "intro": "L'ISL fonctionne sur un principe simple : deux hommes entrent, un seul repart debout. Pas de rounds, pas de temps, pas de pitié. Le combat continue jusqu'à ce qu'un des deux ne puisse plus se battre.",
+    "items": [
+      {
+        "num": "01",
+        "title": "PAS DE ROUNDS",
+        "desc": "Le combat continue sans interruption jusqu'à la fin. Pas de repos, pas de récupération. Quand tu montes dans la cage, tu te bats jusqu'au bout."
+      },
+      {
+        "num": "02",
+        "title": "BARE KNUCKLE",
+        "desc": "Pas de gants. Les poings nus, c'est la tradition. Tu ressens chaque coup donné autant que reçu. Ça forge les vrais combattants."
+      },
+      {
+        "num": "03",
+        "title": "GROUND & POUND",
+        "desc": "Au sol, le combat continue. Pas d'arrêt au sol, pas de protection. Si tu tombes, tu dois te relever ou te soumettre."
+      },
+      {
+        "num": "04",
+        "title": "SOUMISSIONS AUTORISÉES",
+        "desc": "Étranglements, clés de bras, clés de jambe — tout est permis. Taper pour abandonner est toujours une option. La honte est optionnelle."
+      },
+      {
+        "num": "05",
+        "title": "ARBITRAGE MINIMAL",
+        "desc": "Un arbitre unique. Son seul rôle : constater la fin du combat. Il n'intervient que pour les blessures graves mettant la vie en danger."
+      },
+      {
+        "num": "06",
+        "title": "AUCUNE RÈGLE DE TEMPS",
+        "desc": "Le combat dure ce qu'il doit durer. 30 secondes ou 45 minutes. Jusqu'à ce qu'un des deux soit incapable de continuer."
+      }
+    ],
+    "victory_conditions": [
+      { "icon": "KO",  "title": "KNOCKOUT",    "desc": "L'adversaire est inconscient ou incapable de se défendre." },
+      { "icon": "TKO", "title": "TKO",          "desc": "L'arbitre ou le coin arrête le combat pour protéger le combattant." },
+      { "icon": "TAP", "title": "SOUMISSION",   "desc": "Le combattant tape ou verbalise son abandon." },
+      { "icon": "REF", "title": "ARRÊT ARBITRE","desc": "Arrêt pour blessure grave uniquement." }
+    ],
+    "forbidden": [
+      "Morsures",
+      "Coups aux yeux",
+      "Coups à la gorge intentionnels",
+      "Coups à la nuque",
+      "Coups de genou à la tête d'un adversaire au sol",
+      "Attaque des organes génitaux",
+      "Tout acte jugé délibérément dangereux par l'arbitre"
+    ]
+  },
+  "organizer": {
+    "name": "SERGEI ANTONOV",
+    "role": "FONDATEUR & ORGANISATEUR — IRON STREET LEAGUE",
+    "bio": "Sergei Antonov. Un nom que l'on murmure dans les cercles underground de Los Santos. Ancien combattant, ancien soldat, actuel organisateur de la seule ligue de combat qui compte vraiment. Il a fondé l'ISL après avoir compris que les combats officiels étaient corrompus, aseptisés, transformés en spectacle pour les masses. L'ISL est différente. Ici, le sang est réel. La douleur est réelle. Les conséquences sont réelles.",
+    "quote": "Les règles sont faites pour ceux qui ont peur de perdre. Ici, on a tous peur. Mais on se bat quand même.",
+    "attributes": [
+      { "label": "INFLUENCE",    "value": 92 },
+      { "label": "DANGEROSITÉ", "value": 97 },
+      { "label": "RÉSEAU",       "value": 88 },
+      { "label": "RÉPUTATION",   "value": 95 }
+    ]
+  },
+  "watch": {
+    "title": "WATCH LIVE",
+    "description": "Les combats ISL sont diffusés en live sur ISL.GG. Pas de replay, pas d'archive. Tu rates l'event, tu rates tout. Rejoins le Dark Chat #combats pour suivre les annonces de stream.",
+    "how_to_watch": [
+      "Le stream démarre 30 min avant l'event — sois là tôt",
+      "Rejoins le Dark Chat canal #combats pour le lien de stream",
+      "Pas de compte nécessaire — stream public le soir de l'event",
+      "VIP : accès aux coulisses via le canal #vip-isl"
+    ],
+    "access_options": [
+      { "name": "STREAM PUBLIC",  "desc": "Stream principal disponible à tous le soir de l'event", "badge": "GRATUIT" },
+      { "name": "VIP PASS",       "desc": "Accès complet + coulisses IG + canal Dark Chat VIP",     "badge": "VIP" },
+      { "name": "ACCÈS RP",       "desc": "Être présent physiquement dans Los Santos",              "badge": "IN-GAME" }
+    ]
+  },
+  "join": {
+    "fighter_title": "DEVENIR COMBATTANT",
+    "fighter_desc": "Tu veux entrer dans la cage ? L'ISL recrute des combattants prêts à tout. Pas de style imposé, pas de niveau minimum — seulement la volonté de se battre jusqu'au bout.",
+    "fighter_requirements": [
+      "Être actif sur FLASHFA RP",
+      "Avoir au moins 18 ans (IRL)",
+      "Accepter les règles ISL sans exception",
+      "Contacter via Dark Chat canal #recrutement"
+    ],
+    "spectator_title": "ASSISTER EN SPECTATEUR",
+    "spectator_desc": "Pas envie de prendre des coups ? Assiste aux events en tant que spectateur. Places limitées, ambiance garantie.",
+    "spectator_requirements": [
+      "Suivre le stream live sur ISL.GG",
+      "Rejoindre le canal #spectateurs sur Dark Chat",
+      "Pour les events physiques : invitation uniquement"
+    ]
+  }
+}

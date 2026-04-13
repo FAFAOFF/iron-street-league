@@ -1,0 +1,3170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRON STREET LEAGUE — ISL | No Rules. No Mercy.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================
+           ROOT & RESET
+        ============================================ */
+        :root {
+            --bg:         #050505;
+            --bg2:        #0d0d0d;
+            --bg3:        #141414;
+            --surface:    #1a1a1a;
+            --border:     #2a2a2a;
+            --red:        #cc1111;
+            --red-hot:    #ff2222;
+            --red-dark:   #6b0000;
+            --gold:       #c8960c;
+            --gold-light: #e8b020;
+            --text:       #e8e4df;
+            --text-2:     #a09890;
+            --text-3:     #555;
+            --white:      #ffffff;
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-body:    'Barlow Condensed', sans-serif;
+            --font-mono:    'IBM Plex Mono', monospace;
+        }
+
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-body);
+            font-size: 16px;
+            line-height: 1.5;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+
+        /* Grain texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        img { display: block; max-width: 100%; }
+
+        /* ============================================
+           SCROLLBAR
+        ============================================ */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--red); }
+
+        /* ============================================
+           UTILITY
+        ============================================ */
+        .label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--red);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .label::before {
+            content: '';
+            display: block;
+            width: 20px;
+            height: 1px;
+            background: var(--red);
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: clamp(52px, 8vw, 100px);
+            line-height: 0.9;
+            letter-spacing: 0.02em;
+            color: var(--text);
+        }
+
+        .section-title span {
+            color: var(--red);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--red);
+            color: var(--white);
+            font-family: var(--font-display);
+            font-size: 18px;
+            letter-spacing: 0.1em;
+            padding: 14px 36px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+            text-transform: uppercase;
+        }
+        .btn-primary:hover {
+            background: var(--red-hot);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(204,17,17,0.5);
+        }
+
+        .btn-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            color: var(--text);
+            font-family: var(--font-display);
+            font-size: 18px;
+            letter-spacing: 0.1em;
+            padding: 13px 35px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.15s;
+            text-transform: uppercase;
+        }
+        .btn-outline:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        /* ============================================
+           NAV
+        ============================================ */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            height: 72px;
+            background: rgba(5,5,5,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        nav.scrolled {
+            height: 60px;
+            border-bottom-color: var(--red-dark);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-logo-badge {
+            width: 44px;
+            height: 44px;
+            background: var(--red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: 18px;
+            letter-spacing: 0.05em;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+
+        .nav-logo-text {
+            font-family: var(--font-display);
+            font-size: 22px;
+            letter-spacing: 0.15em;
+            color: var(--text);
+        }
+
+        .nav-logo-text span {
+            color: var(--red);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 36px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-2);
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0; right: 100%;
+            height: 1px;
+            background: var(--red);
+            transition: right 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text); }
+        .nav-links a:hover::after { right: 0; }
+
+        .nav-live {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            color: var(--red-hot);
+            animation: pulse-live 2s ease infinite;
+        }
+
+        .nav-live::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--red-hot);
+            animation: pulse-live 2s ease infinite;
+        }
+
+        @keyframes pulse-live {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ============================================
+           HERO
+        ============================================ */
+        #hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+            padding: 120px 48px 80px;
+        }
+
+        /* Background diagonal stripes */
+        #hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                -55deg,
+                transparent,
+                transparent 80px,
+                rgba(204,17,17,0.015) 80px,
+                rgba(204,17,17,0.015) 81px
+            );
+            pointer-events: none;
+        }
+
+        /* Scanlines */
+        #hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 3px,
+                rgba(0,0,0,0.15) 3px,
+                rgba(0,0,0,0.15) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Big ISL watermark */
+        .hero-watermark {
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: var(--font-display);
+            font-size: clamp(200px, 30vw, 420px);
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255,255,255,0.03);
+            line-height: 1;
+            pointer-events: none;
+            user-select: none;
+            letter-spacing: -0.05em;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+        }
+
+        .hero-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .hero-eyebrow-tag {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--bg);
+            background: var(--red);
+            padding: 4px 12px;
+        }
+
+        .hero-eyebrow-line {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            color: var(--text-3);
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: clamp(72px, 12vw, 160px);
+            line-height: 0.88;
+            letter-spacing: 0.02em;
+            color: var(--text);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .hero-title .line-red {
+            color: var(--red);
+            display: block;
+        }
+
+        .hero-title .glitch {
+            position: relative;
+            display: block;
+        }
+
+        .hero-title .glitch::before,
+        .hero-title .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+        }
+
+        .hero-title .glitch::before {
+            color: var(--red);
+            clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+            transform: translate(-3px, 0);
+            animation: glitch-1 4s steps(1) infinite;
+        }
+
+        .hero-title .glitch::after {
+            color: #00ffff;
+            clip-path: polygon(0 60%, 100% 60%, 100% 75%, 0 75%);
+            transform: translate(3px, 0);
+            animation: glitch-2 4s steps(1) infinite;
+        }
+
+        @keyframes glitch-1 {
+            0%, 90%, 100% { opacity: 0; transform: translate(-3px, 0); }
+            91%            { opacity: 1; transform: translate(-3px, -2px); }
+            92%            { opacity: 1; transform: translate(3px, 0); }
+            93%            { opacity: 0; }
+        }
+
+        @keyframes glitch-2 {
+            0%, 92%, 100% { opacity: 0; transform: translate(3px, 0); }
+            93%            { opacity: 1; transform: translate(3px, 2px); }
+            94%            { opacity: 1; transform: translate(-3px, 0); }
+            95%            { opacity: 0; }
+        }
+
+        .hero-subtitle {
+            font-family: var(--font-body);
+            font-size: clamp(16px, 2vw, 22px);
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-2);
+            margin-bottom: 48px;
+            font-style: italic;
+        }
+
+        .hero-ctas {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 64px;
+        }
+
+        /* Countdown */
+        .hero-countdown {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+        }
+
+        .countdown-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.25em;
+            color: var(--red);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .countdown-blocks {
+            display: flex;
+            gap: 1px;
+        }
+
+        .countdown-block {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: 2px solid var(--red);
+            padding: 16px 24px;
+            text-align: center;
+            min-width: 90px;
+        }
+
+        .countdown-num {
+            font-family: var(--font-display);
+            font-size: 48px;
+            line-height: 1;
+            color: var(--text);
+            display: block;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .countdown-unit {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            color: var(--text-3);
+            text-transform: uppercase;
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* Stats bar */
+        .hero-stats {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            z-index: 2;
+            display: flex;
+            border-top: 1px solid var(--border);
+        }
+
+        .hero-stat {
+            flex: 1;
+            padding: 20px 48px;
+            border-right: 1px solid var(--border);
+        }
+
+        .hero-stat:last-child { border-right: none; }
+
+        .hero-stat-num {
+            font-family: var(--font-display);
+            font-size: 36px;
+            color: var(--red);
+            line-height: 1;
+        }
+
+        .hero-stat-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--text-3);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* ============================================
+           TICKER
+        ============================================ */
+        .ticker-wrap {
+            background: var(--red);
+            overflow: hidden;
+            padding: 10px 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .ticker-content {
+            display: flex;
+            animation: ticker 40s linear infinite;
+            white-space: nowrap;
+            width: max-content;
+        }
+
+        .ticker-item {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--bg);
+            font-weight: 600;
+            padding: 0 40px;
+        }
+
+        .ticker-sep {
+            color: rgba(0,0,0,0.3);
+            padding: 0 10px;
+        }
+
+        @keyframes ticker {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* ============================================
+           SECTIONS LAYOUT
+        ============================================ */
+        section {
+            padding: 100px 48px;
+        }
+
+        .section-header {
+            margin-bottom: 60px;
+        }
+
+        /* ============================================
+           NEXT EVENT — FIGHT CARD
+        ============================================ */
+        #next-event {
+            background: var(--bg2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #next-event::before {
+            content: 'FIGHT CARD';
+            position: absolute;
+            bottom: -20px;
+            right: -10px;
+            font-family: var(--font-display);
+            font-size: 200px;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255,255,255,0.02);
+            pointer-events: none;
+        }
+
+        .event-header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 40px;
+            align-items: start;
+            margin-bottom: 60px;
+        }
+
+        .event-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .event-name {
+            font-family: var(--font-display);
+            font-size: clamp(48px, 7vw, 88px);
+            line-height: 0.9;
+            letter-spacing: 0.02em;
+        }
+
+        .event-details {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .event-detail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .event-detail-icon {
+            width: 16px;
+            height: 16px;
+            background: var(--red);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+
+        .event-detail-text {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            color: var(--text-2);
+        }
+
+        .ppv-badge {
+            background: linear-gradient(135deg, var(--gold-dark, #8a6500), var(--gold));
+            color: var(--bg);
+            font-family: var(--font-display);
+            font-size: 14px;
+            letter-spacing: 0.2em;
+            padding: 8px 20px;
+            text-transform: uppercase;
+            align-self: flex-start;
+            position: relative;
+        }
+
+        .ppv-badge::before {
+            content: 'PAY-PER-VIEW';
+            display: block;
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            font-family: var(--font-mono);
+            opacity: 0.7;
+            margin-bottom: 2px;
+        }
+
+        /* Main Fight */
+        .main-fight {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: 3px solid var(--red);
+            padding: 48px;
+            margin-bottom: 2px;
+            position: relative;
+        }
+
+        .main-fight::before {
+            content: 'MAIN EVENT';
+            position: absolute;
+            top: -1px;
+            right: 40px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            background: var(--red);
+            color: var(--bg);
+            padding: 4px 12px;
+        }
+
+        .fight-matchup {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .fighter-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fighter-card.right {
+            align-items: flex-end;
+            text-align: right;
+        }
+
+        .fighter-nickname {
+            font-family: var(--font-body);
+            font-size: 13px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--red);
+            font-weight: 600;
+            font-style: italic;
+            margin-bottom: 4px;
+        }
+
+        .fighter-name-big {
+            font-family: var(--font-display);
+            font-size: clamp(36px, 5vw, 60px);
+            letter-spacing: 0.03em;
+            line-height: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .fighter-record {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-2);
+            letter-spacing: 0.1em;
+        }
+
+        .fighter-record span {
+            color: var(--text);
+        }
+
+        .fighter-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .fighter-card.right .fighter-tags {
+            justify-content: flex-end;
+        }
+
+        .fighter-tag {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+            color: var(--text-3);
+            padding: 3px 8px;
+        }
+
+        .vs-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .vs-text {
+            font-family: var(--font-display);
+            font-size: 64px;
+            color: var(--red);
+            line-height: 1;
+        }
+
+        .vs-divider {
+            width: 1px;
+            height: 60px;
+            background: linear-gradient(to bottom, transparent, var(--border), transparent);
+        }
+
+        .vs-type {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--text-3);
+            text-align: center;
+        }
+
+        /* Fight List */
+        .fight-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .fight-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto 1fr auto;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            padding: 16px 24px;
+            transition: all 0.2s;
+        }
+
+        .fight-row:hover {
+            border-color: var(--red-dark);
+            background: var(--surface);
+        }
+
+        .fight-row-num {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-3);
+            letter-spacing: 0.15em;
+            width: 30px;
+        }
+
+        .fight-row-fighter {
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 0.05em;
+        }
+
+        .fight-row-fighter.right {
+            text-align: right;
+        }
+
+        .fight-row-vs {
+            font-family: var(--font-display);
+            font-size: 20px;
+            color: var(--red);
+            text-align: center;
+        }
+
+        .fight-row-type {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            color: var(--gold);
+            text-align: right;
+        }
+
+        /* ============================================
+           RULES
+        ============================================ */
+        #rules {
+            background: var(--bg);
+            position: relative;
+        }
+
+        .rules-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+            margin-top: 60px;
+        }
+
+        .rule-item {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            padding: 36px;
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rule-item::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--red-dark);
+            transition: background 0.2s;
+        }
+
+        .rule-item:hover::before {
+            background: var(--red);
+        }
+
+        .rule-item:hover {
+            border-color: var(--red-dark);
+        }
+
+        .rule-num {
+            font-family: var(--font-display);
+            font-size: 56px;
+            color: var(--red-dark);
+            line-height: 0.9;
+            min-width: 60px;
+            transition: color 0.2s;
+        }
+
+        .rule-item:hover .rule-num {
+            color: var(--red);
+        }
+
+        .rule-content { flex: 1; }
+
+        .rule-title {
+            font-family: var(--font-display);
+            font-size: 26px;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .rule-desc {
+            font-family: var(--font-body);
+            font-size: 14px;
+            font-weight: 300;
+            color: var(--text-2);
+            line-height: 1.6;
+            letter-spacing: 0.03em;
+        }
+
+        /* Forbidden */
+        .rules-forbidden {
+            margin-top: 48px;
+            background: rgba(204,17,17,0.05);
+            border: 1px solid var(--red-dark);
+            padding: 32px 40px;
+        }
+
+        .forbidden-title {
+            font-family: var(--font-display);
+            font-size: 22px;
+            letter-spacing: 0.1em;
+            color: var(--red);
+            margin-bottom: 20px;
+        }
+
+        .forbidden-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .forbidden-item {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            color: var(--text-2);
+            border: 1px solid var(--red-dark);
+            padding: 6px 14px;
+            position: relative;
+            text-decoration: line-through;
+            text-decoration-color: var(--red-dark);
+        }
+
+        /* Victory conditions */
+        .victory-conditions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            margin-top: 48px;
+        }
+
+        .victory-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 28px 24px;
+            text-align: center;
+            border-top: 2px solid var(--gold);
+        }
+
+        .victory-icon {
+            font-family: var(--font-display);
+            font-size: 36px;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        .victory-title {
+            font-family: var(--font-display);
+            font-size: 20px;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+
+        .victory-desc {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            color: var(--text-3);
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           ROSTER
+        ============================================ */
+        #roster {
+            background: var(--bg2);
+        }
+
+        .roster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 2px;
+            margin-top: 60px;
+        }
+
+        .roster-card {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+            transition: all 0.25s;
+            cursor: pointer;
+        }
+
+        .roster-card:hover {
+            border-color: var(--red-dark);
+            transform: translateY(-4px);
+            z-index: 2;
+        }
+
+        .roster-card:hover .roster-card-overlay {
+            opacity: 1;
+        }
+
+        .roster-card-img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: var(--surface);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Fighter silhouette placeholder */
+        .roster-card-img::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--bg3) 0%, var(--surface) 100%);
+        }
+
+        .roster-card-img::after {
+            content: attr(data-initials);
+            position: absolute;
+            font-family: var(--font-display);
+            font-size: 72px;
+            color: rgba(255,255,255,0.05);
+            z-index: 1;
+        }
+
+        .roster-card-silhouette {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .roster-card-silhouette svg {
+            width: 60%;
+            height: auto;
+            opacity: 0.12;
+        }
+
+        .roster-card-number {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--text-3);
+            z-index: 2;
+        }
+
+        .roster-card-status {
+            position: absolute;
+            top: 12px;
+            left: 0;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            padding: 3px 10px;
+            z-index: 2;
+        }
+
+        .roster-card-status.active {
+            background: var(--red);
+            color: var(--bg);
+        }
+
+        .roster-card-status.injured {
+            background: var(--gold);
+            color: var(--bg);
+        }
+
+        .roster-card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(204,17,17,0.3) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.25s;
+            z-index: 2;
+        }
+
+        .roster-card-info {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .roster-card-nickname {
+            font-family: var(--font-body);
+            font-style: italic;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            color: var(--red);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .roster-card-name {
+            font-family: var(--font-display);
+            font-size: 22px;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .roster-card-stats {
+            display: flex;
+            gap: 12px;
+        }
+
+        .roster-stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .roster-stat-val {
+            font-family: var(--font-display);
+            font-size: 20px;
+            line-height: 1;
+            color: var(--text);
+        }
+
+        .roster-stat-label {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            color: var(--text-3);
+        }
+
+        .roster-stat-sep {
+            width: 1px;
+            background: var(--border);
+            align-self: stretch;
+        }
+
+        /* ============================================
+           SERGEI — THE ORGANIZER
+        ============================================ */
+        #organizer {
+            background: var(--bg);
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .organizer-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 80vh;
+        }
+
+        .organizer-visual {
+            background: var(--surface);
+            position: relative;
+            overflow: hidden;
+            min-height: 600px;
+        }
+
+        .organizer-visual-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 30% 70%, rgba(204,17,17,0.15) 0%, transparent 60%),
+                linear-gradient(135deg, var(--bg3) 0%, var(--surface) 100%);
+        }
+
+        .organizer-visual-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .organizer-name-bg {
+            position: absolute;
+            bottom: -20px;
+            left: -10px;
+            font-family: var(--font-display);
+            font-size: 140px;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(204,17,17,0.08);
+            line-height: 1;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .organizer-silhouette {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 0;
+        }
+
+        .organizer-silhouette-fig {
+            width: 70%;
+            height: 90%;
+            background: linear-gradient(to bottom, rgba(5,5,5,0) 0%, rgba(5,5,5,0.3) 100%);
+            border-left: 1px solid rgba(204,17,17,0.2);
+            border-right: 1px solid rgba(204,17,17,0.2);
+            position: relative;
+        }
+
+        /* Abstract figure */
+        .organizer-silhouette-fig::before {
+            content: 'SERGEI';
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--font-display);
+            font-size: 14px;
+            letter-spacing: 0.4em;
+            color: rgba(204,17,17,0.4);
+        }
+
+        .organizer-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .organizer-placeholder-icon {
+            width: 120px;
+            height: 120px;
+            border: 1px solid rgba(204,17,17,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .organizer-placeholder-icon::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border: 1px solid rgba(204,17,17,0.2);
+            border-radius: 50%;
+        }
+
+        .organizer-placeholder-icon svg {
+            width: 60px;
+            height: 60px;
+            fill: rgba(204,17,17,0.3);
+        }
+
+        .organizer-classified {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            color: rgba(204,17,17,0.5);
+            border: 1px solid rgba(204,17,17,0.2);
+            padding: 6px 16px;
+        }
+
+        .organizer-content {
+            padding: 80px 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .organizer-title {
+            font-family: var(--font-display);
+            font-size: clamp(52px, 6vw, 80px);
+            line-height: 0.9;
+            letter-spacing: 0.02em;
+            margin-bottom: 8px;
+        }
+
+        .organizer-title-sub {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.25em;
+            color: var(--red);
+            text-transform: uppercase;
+            margin-bottom: 36px;
+        }
+
+        .organizer-bio {
+            font-family: var(--font-body);
+            font-size: 16px;
+            font-weight: 300;
+            color: var(--text-2);
+            line-height: 1.8;
+            letter-spacing: 0.03em;
+            border-left: 2px solid var(--red-dark);
+            padding-left: 20px;
+            margin-bottom: 40px;
+        }
+
+        .organizer-quote {
+            font-family: var(--font-display);
+            font-size: 28px;
+            letter-spacing: 0.05em;
+            color: var(--text);
+            line-height: 1.2;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .organizer-quote::before {
+            content: '"';
+            position: absolute;
+            left: -20px;
+            top: -10px;
+            font-size: 80px;
+            color: var(--red-dark);
+            line-height: 1;
+            font-family: Georgia, serif;
+        }
+
+        .organizer-attrs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .organizer-attr {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .organizer-attr-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            color: var(--text-3);
+            text-transform: uppercase;
+            width: 140px;
+        }
+
+        .organizer-attr-bar {
+            flex: 1;
+            height: 3px;
+            background: var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .organizer-attr-bar-fill {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            background: var(--red);
+            transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .organizer-attr-val {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--red);
+            width: 30px;
+            text-align: right;
+        }
+
+        /* ============================================
+           WATCH / STREAM
+        ============================================ */
+        #watch {
+            background: var(--bg2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #watch::before {
+            content: 'LIVE';
+            position: absolute;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-family: var(--font-display);
+            font-size: 300px;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(204,17,17,0.04);
+            pointer-events: none;
+        }
+
+        .watch-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2px;
+            margin-top: 60px;
+        }
+
+        .watch-main {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            aspect-ratio: 16/9;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .watch-main-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0,0,0,0.3) 2px,
+                    rgba(0,0,0,0.3) 4px
+                ),
+                radial-gradient(circle at 50% 50%, rgba(204,17,17,0.08) 0%, transparent 70%),
+                var(--bg3);
+        }
+
+        .watch-main-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .watch-live-badge {
+            background: var(--red);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            padding: 6px 16px;
+            animation: pulse-live 2s ease infinite;
+        }
+
+        .watch-title {
+            font-family: var(--font-display);
+            font-size: clamp(28px, 4vw, 48px);
+            letter-spacing: 0.05em;
+            text-align: center;
+        }
+
+        .watch-subtitle {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            letter-spacing: 0.15em;
+            color: var(--text-2);
+            text-align: center;
+        }
+
+        .watch-play-btn {
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .watch-play-btn:hover {
+            background: var(--red);
+            box-shadow: 0 0 40px rgba(204,17,17,0.5);
+        }
+
+        .watch-play-btn svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--text);
+            margin-left: 4px;
+        }
+
+        .watch-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .watch-info-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 28px;
+            flex: 1;
+        }
+
+        .watch-info-title {
+            font-family: var(--font-display);
+            font-size: 20px;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+            color: var(--gold);
+        }
+
+        .watch-info-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .watch-info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .watch-info-item-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--red);
+            margin-top: 7px;
+            flex-shrink: 0;
+        }
+
+        .watch-info-item-text {
+            font-family: var(--font-body);
+            font-size: 14px;
+            font-weight: 300;
+            color: var(--text-2);
+            letter-spacing: 0.03em;
+        }
+
+        .watch-access-options {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .access-option {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .access-option:hover {
+            border-color: var(--red-dark);
+        }
+
+        .access-option.featured {
+            background: var(--surface);
+            border-top: 2px solid var(--gold);
+        }
+
+        .access-option-name {
+            font-family: var(--font-display);
+            font-size: 20px;
+            letter-spacing: 0.05em;
+        }
+
+        .access-option-desc {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            color: var(--text-3);
+            margin-top: 2px;
+        }
+
+        .access-option-badge {
+            font-family: var(--font-display);
+            font-size: 22px;
+            color: var(--gold);
+        }
+
+        /* ============================================
+           JOIN / REGISTER
+        ============================================ */
+        #join {
+            background: var(--bg);
+            position: relative;
+        }
+
+        .join-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+            margin-top: 60px;
+        }
+
+        .join-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            padding: 48px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .join-card:hover {
+            border-color: var(--red-dark);
+        }
+
+        .join-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+
+        .join-card.fighter::before { background: var(--red); }
+        .join-card.spectator::before { background: var(--gold); }
+
+        .join-card-icon {
+            font-family: var(--font-display);
+            font-size: 72px;
+            color: rgba(255,255,255,0.05);
+            line-height: 1;
+            margin-bottom: 24px;
+        }
+
+        .join-card-title {
+            font-family: var(--font-display);
+            font-size: 40px;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .join-card-sub {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            color: var(--text-3);
+            margin-bottom: 24px;
+        }
+
+        .join-card-desc {
+            font-family: var(--font-body);
+            font-size: 15px;
+            font-weight: 300;
+            color: var(--text-2);
+            line-height: 1.7;
+            letter-spacing: 0.03em;
+            margin-bottom: 32px;
+        }
+
+        .join-requirements {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 36px;
+        }
+
+        .join-req {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            color: var(--text-2);
+        }
+
+        .join-req::before {
+            content: '//';
+            color: var(--red);
+            font-size: 14px;
+        }
+
+        /* ============================================
+           FOOTER
+        ============================================ */
+        footer {
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            padding: 60px 48px 40px;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 48px;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .footer-logo {
+            font-family: var(--font-display);
+            font-size: 36px;
+            letter-spacing: 0.1em;
+        }
+
+        .footer-logo span { color: var(--red); }
+
+        .footer-tagline {
+            font-family: var(--font-body);
+            font-style: italic;
+            font-weight: 300;
+            font-size: 14px;
+            color: var(--text-3);
+            letter-spacing: 0.05em;
+            max-width: 260px;
+        }
+
+        .footer-warning {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            color: rgba(204,17,17,0.4);
+            border: 1px solid rgba(204,17,17,0.15);
+            padding: 8px 12px;
+            line-height: 1.6;
+            max-width: 280px;
+        }
+
+        .footer-col-title {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.25em;
+            color: var(--red);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-links a {
+            font-family: var(--font-body);
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-3);
+            letter-spacing: 0.05em;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--text); }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-copy {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            color: var(--text-3);
+        }
+
+        .footer-server {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-server::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--red-hot);
+            animation: pulse-live 2s ease infinite;
+        }
+
+        /* ============================================
+           FADE IN ANIMATIONS
+        ============================================ */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ============================================
+           RESPONSIVE
+        ============================================ */
+        @media (max-width: 900px) {
+            nav { padding: 0 24px; }
+            .nav-links { display: none; }
+            section { padding: 60px 24px; }
+            .hero-stats { display: none; }
+            .rules-grid { grid-template-columns: 1fr; }
+            .victory-conditions { grid-template-columns: 1fr 1fr; }
+            .watch-grid { grid-template-columns: 1fr; }
+            .join-grid { grid-template-columns: 1fr; }
+            .organizer-inner { grid-template-columns: 1fr; }
+            .footer-top { grid-template-columns: 1fr 1fr; }
+            .fight-matchup { grid-template-columns: 1fr; gap: 16px; }
+            .fight-matchup .fighter-card.right { align-items: flex-start; text-align: left; }
+            .event-header { grid-template-columns: 1fr; }
+            #hero { padding: 100px 24px 120px; }
+            .countdown-blocks { flex-wrap: wrap; }
+            .countdown-block { min-width: 70px; }
+            .organizer-content { padding: 48px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== NAV ===== -->
+    <nav id="navbar">
+        <a href="#hero" class="nav-logo">
+            <div class="nav-logo-badge">ISL</div>
+            <span class="nav-logo-text">IRON <span>STREET</span> LEAGUE</span>
+        </a>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="#next-event">Prochain Event</a></li>
+            <li><a href="#rules">Règles</a></li>
+            <li><a href="#roster">Roster</a></li>
+            <li><a href="#organizer">Sergei</a></li>
+            <li><a href="#watch">Watch</a></li>
+            <li><a href="#join">Rejoindre</a></li>
+            <li><a href="admin.html" style="color:var(--text-3);font-size:10px;letter-spacing:0.15em;" id="nav-admin-link">ADMINISTRATION</a></li>
+        </ul>
+        <div class="nav-live">LIVE — <span id="nav-server">FLASHFA RP</span></div>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <section id="hero">
+        <div class="hero-watermark">ISL</div>
+
+        <div class="hero-content fade-in">
+            <div class="hero-eyebrow">
+                <span class="hero-eyebrow-tag" id="hero-server">FLASHFA RP — UNDERGROUND</span>
+                <span class="hero-eyebrow-line">// EST. LOS SANTOS</span>
+            </div>
+
+            <h1 class="hero-title">
+                <span class="glitch" data-text="IRON">IRON</span>
+                <span class="glitch line-red" data-text="STREET">STREET</span>
+                <span class="glitch" data-text="LEAGUE">LEAGUE</span>
+            </h1>
+
+            <p class="hero-subtitle" id="hero-subtitle">No rules. No mercy. No limits.</p>
+
+            <div class="hero-ctas">
+                <a href="#next-event" class="btn-primary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                    Prochain Combat
+                </a>
+                <a href="#join" class="btn-outline">Devenir Combattant</a>
+            </div>
+
+            <div>
+                <div class="countdown-label">Prochain event dans</div>
+                <div class="countdown-blocks">
+                    <div class="countdown-block">
+                        <span class="countdown-num" id="cd-days">00</span>
+                        <span class="countdown-unit">Jours</span>
+                    </div>
+                    <div class="countdown-block">
+                        <span class="countdown-num" id="cd-hours">00</span>
+                        <span class="countdown-unit">Heures</span>
+                    </div>
+                    <div class="countdown-block">
+                        <span class="countdown-num" id="cd-mins">00</span>
+                        <span class="countdown-unit">Minutes</span>
+                    </div>
+                    <div class="countdown-block">
+                        <span class="countdown-num" id="cd-secs">00</span>
+                        <span class="countdown-unit">Secondes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-stats" id="hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat-num">47</div>
+                <div class="hero-stat-label">Combats organisés</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-num">23</div>
+                <div class="hero-stat-label">Combattants actifs</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-num">0</div>
+                <div class="hero-stat-label">Rounds — Fight to finish</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-num">100%</div>
+                <div class="hero-stat-label">Underground — Non officiel</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TICKER ===== -->
+    <div class="ticker-wrap" aria-hidden="true">
+        <div class="ticker-content" id="ticker-content">
+            <span class="ticker-item">PROCHAIN EVENT <span class="ticker-sep">◆</span> ISL NIGHT OF BLOOD III</span>
+            <span class="ticker-item">CHAMPION EN TITRE <span class="ticker-sep">◆</span> "THE BUTCHER" VASIL KOZLOV — 8KO / 1TKO</span>
+            <span class="ticker-item">NOUVEAU COMBATTANT <span class="ticker-sep">◆</span> "MAD DOG" RAMOS REJOINT LE ROSTER</span>
+            <span class="ticker-item">SERGEI ANTONOV ANNONCE <span class="ticker-sep">◆</span> PRIZE MONEY AUGMENTÉ POUR LE PROCHAIN EVENT</span>
+            <span class="ticker-item">FLASHFA RP <span class="ticker-sep">◆</span> STREAM LIVE DISPONIBLE SUR LE SITE</span>
+            <span class="ticker-item">RÈGLE PRINCIPALE <span class="ticker-sep">◆</span> PAS DE LIMITE DE TEMPS — FINISH THE FIGHT</span>
+            <span class="ticker-item">PROCHAIN EVENT <span class="ticker-sep">◆</span> ISL NIGHT OF BLOOD III</span>
+            <span class="ticker-item">CHAMPION EN TITRE <span class="ticker-sep">◆</span> "THE BUTCHER" VASIL KOZLOV — 8KO / 1TKO</span>
+            <span class="ticker-item">NOUVEAU COMBATTANT <span class="ticker-sep">◆</span> "MAD DOG" RAMOS REJOINT LE ROSTER</span>
+            <span class="ticker-item">SERGEI ANTONOV ANNONCE <span class="ticker-sep">◆</span> PRIZE MONEY AUGMENTÉ POUR LE PROCHAIN EVENT</span>
+            <span class="ticker-item">FLASHFA RP <span class="ticker-sep">◆</span> STREAM LIVE DISPONIBLE SUR LE SITE</span>
+            <span class="ticker-item">RÈGLE PRINCIPALE <span class="ticker-sep">◆</span> PAS DE LIMITE DE TEMPS — FINISH THE FIGHT</span>
+        </div>
+    </div>
+
+    <!-- ===== NEXT EVENT ===== -->
+    <section id="next-event">
+        <div class="event-header fade-in">
+            <div class="event-meta">
+                <div class="label">Prochain Event PPV</div>
+                <h2 class="event-name" id="event-name">ISL NIGHT<br>OF BLOOD III</h2>
+                <div class="event-details">
+                    <div class="event-detail">
+                        <div class="event-detail-icon"></div>
+                        <span class="event-detail-text" id="event-date-text">VENDREDI 18 AVRIL — 21:00</span>
+                    </div>
+                    <div class="event-detail">
+                        <div class="event-detail-icon"></div>
+                        <span class="event-detail-text" id="event-location">LOS SANTOS — LOCATION SECRÈTE</span>
+                    </div>
+                    <div class="event-detail">
+                        <div class="event-detail-icon"></div>
+                        <span class="event-detail-text" id="event-stream">STREAM LIVE SUR ISL.GG</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="ppv-badge" id="event-badge">ISL EXCLUSIVE</div>
+            </div>
+        </div>
+
+        <!-- Main Fight -->
+        <div class="main-fight fade-in">
+            <div class="fight-matchup">
+                <div class="fighter-card">
+                    <span class="fighter-nickname" id="me-f1-nick">"The Butcher"</span>
+                    <span class="fighter-name-big" id="me-f1-name">VASIL<br>KOZLOV</span>
+                    <span class="fighter-record" id="me-f1-record">ISL Record: <span>8-1-0</span></span>
+                    <div class="fighter-tags" id="me-f1-tags">
+                        <span class="fighter-tag">CHAMPION</span>
+                        <span class="fighter-tag">BARE KNUCKLE</span>
+                        <span class="fighter-tag">8 KO</span>
+                    </div>
+                </div>
+
+                <div class="vs-block">
+                    <div class="vs-divider"></div>
+                    <div class="vs-text">VS</div>
+                    <div class="vs-type">TITLE FIGHT<br>NO ROUNDS<br>NO MERCY</div>
+                    <div class="vs-divider"></div>
+                </div>
+
+                <div class="fighter-card right">
+                    <span class="fighter-nickname" id="me-f2-nick">"Iron Jaw"</span>
+                    <span class="fighter-name-big" id="me-f2-name">DIMITRI<br>VORONOV</span>
+                    <span class="fighter-record" id="me-f2-record">ISL Record: <span>6-0-1</span></span>
+                    <div class="fighter-tags" id="me-f2-tags">
+                        <span class="fighter-tag">CHALLENGER</span>
+                        <span class="fighter-tag">GROUND POUND</span>
+                        <span class="fighter-tag">UNBEATEN</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Undercard -->
+        <div class="fight-list fade-in" id="undercard-list">
+            <div class="fight-row">
+                <div class="fight-row-num">#2</div>
+                <div class="fight-row-fighter">"GHOST" MARCOS SILVA</div>
+                <div class="fight-row-vs">VS</div>
+                <div class="fight-row-fighter right">"RABID" TONY FERNANDEZ</div>
+                <div class="fight-row-type">CO-MAIN EVENT</div>
+            </div>
+            <div class="fight-row">
+                <div class="fight-row-num">#3</div>
+                <div class="fight-row-fighter">"THE HAMMER" BRICK JOHNSON</div>
+                <div class="fight-row-vs">VS</div>
+                <div class="fight-row-fighter right">"MAD DOG" RAMOS</div>
+                <div class="fight-row-type">DEBUT FIGHT</div>
+            </div>
+            <div class="fight-row">
+                <div class="fight-row-num">#4</div>
+                <div class="fight-row-fighter">"VIPER" CHEN WEI</div>
+                <div class="fight-row-vs">VS</div>
+                <div class="fight-row-fighter right">TBA</div>
+                <div class="fight-row-type">UNDERCARD</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== RULES ===== -->
+    <section id="rules">
+        <div class="section-header fade-in">
+            <div class="label">Le Code de la Rue</div>
+            <h2 class="section-title" id="rules-title">LES <span>RÈGLES</span></h2>
+            <p id="rules-intro" style="margin-top:16px; font-family:var(--font-mono); font-size:12px; letter-spacing:0.15em; color:var(--text-3); max-width:500px;">
+                L'ISL fonctionne sur un principe simple : finir le combat. Peu importe comment, peu importe combien de temps ça prend.
+            </p>
+        </div>
+
+        <div class="rules-grid" id="rules-grid">
+            <div class="rule-item fade-in">
+                <span class="rule-num">01</span>
+                <div class="rule-content">
+                    <div class="rule-title">PAS DE ROUNDS</div>
+                    <div class="rule-desc">Le combat continue jusqu'à un résultat définitif. Aucune pause, aucun break entre les rounds. Tu commences, tu finis. Peu importe le temps que ça prend.</div>
+                </div>
+            </div>
+            <div class="rule-item fade-in">
+                <span class="rule-num">02</span>
+                <div class="rule-content">
+                    <div class="rule-title">BARE KNUCKLE</div>
+                    <div class="rule-desc">Mains nues ou bandages légers autorisés. Pas de gants de boxe. L'ISL, c'est le combat dans son état le plus pur. Pas d'équipement de protection.</div>
+                </div>
+            </div>
+            <div class="rule-item fade-in">
+                <span class="rule-num">03</span>
+                <div class="rule-content">
+                    <div class="rule-title">GROUND & POUND</div>
+                    <div class="rule-desc">Les frappes au sol sont autorisées. Une fois à terre, le combat ne s'arrête pas. Tu peux continuer à frapper un adversaire au sol jusqu'au KO ou au tap.</div>
+                </div>
+            </div>
+            <div class="rule-item fade-in">
+                <span class="rule-num">04</span>
+                <div class="rule-content">
+                    <div class="rule-title">PAS DE CATÉGORIES</div>
+                    <div class="rule-desc">Aucune catégorie de poids à l'ISL. Tu te bats contre qui Sergei désigne. La force ne suffit pas — l'intelligence, la technique, la résistance mentale. Tout compte.</div>
+                </div>
+            </div>
+            <div class="rule-item fade-in">
+                <span class="rule-num">05</span>
+                <div class="rule-content">
+                    <div class="rule-title">COIN — ABANDON</div>
+                    <div class="rule-desc">Seul le combattant ou son corner peut arrêter le combat. Le corner peut lancer la serviette pour protéger son combattant. Aucune décision extérieure.</div>
+                </div>
+            </div>
+            <div class="rule-item fade-in">
+                <span class="rule-num">06</span>
+                <div class="rule-content">
+                    <div class="rule-title">RESPECT DU RÉSULTAT</div>
+                    <div class="rule-desc">Une fois le combat terminé, le résultat est définitif. Aucune contestation. Aucune revanche garantie. L'ISL reconnaît un seul arbitre : la réalité du combat.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Victory Conditions -->
+        <div style="margin-top:48px;">
+            <div class="label" style="margin-bottom:24px;">Conditions de Victoire</div>
+            <div class="victory-conditions fade-in" id="victory-conditions">
+                <div class="victory-item">
+                    <div class="victory-icon">KO</div>
+                    <div class="victory-title">KNOCKOUT</div>
+                    <div class="victory-desc">L'adversaire est<br>inconscient. Combat terminé.</div>
+                </div>
+                <div class="victory-item">
+                    <div class="victory-icon">TKO</div>
+                    <div class="victory-title">TECH. KO</div>
+                    <div class="victory-desc">Le combattant ne peut<br>plus se défendre.</div>
+                </div>
+                <div class="victory-item">
+                    <div class="victory-icon">TAP</div>
+                    <div class="victory-title">SUBMISSION</div>
+                    <div class="victory-desc">Tap out verbal ou physique.<br>Abandon accepté.</div>
+                </div>
+                <div class="victory-item">
+                    <div class="victory-icon">⌀</div>
+                    <div class="victory-title">CORNER STOP</div>
+                    <div class="victory-desc">Serviette lancée.<br>Combat stoppé.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forbidden -->
+        <div class="rules-forbidden fade-in">
+            <div class="forbidden-title">// STRICTEMENT INTERDIT —</div>
+            <div class="forbidden-list" id="forbidden-list">
+                <span class="forbidden-item">Morsures</span>
+                <span class="forbidden-item">Coups aux yeux</span>
+                <span class="forbidden-item">Coups à la gorge (intentionnels)</span>
+                <span class="forbidden-item">Manipulation des organes génitaux</span>
+                <span class="forbidden-item">Armes cachées</span>
+                <span class="forbidden-item">Intervention extérieure</span>
+                <span class="forbidden-item">Interruption par tiers</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ROSTER ===== -->
+    <section id="roster">
+        <div class="section-header fade-in">
+            <div class="label">Les Guerriers de l'ISL</div>
+            <h2 class="section-title">ROSTER <span>ACTIF</span></h2>
+        </div>
+
+        <div class="roster-grid" id="roster-grid">
+
+            <div class="roster-card fade-in">
+                <div class="roster-card-img" data-initials="VK">
+                    <div class="roster-card-overlay"></div>
+                    <div class="roster-card-silhouette">
+                        <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="50" cy="25" rx="18" ry="20" fill="white"/>
+                            <rect x="30" y="45" width="40" height="60" rx="6" fill="white"/>
+                            <rect x="8" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="70" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="32" y="105" width="17" height="70" rx="6" fill="white"/>
+                            <rect x="51" y="105" width="17" height="70" rx="6" fill="white"/>
+                        </svg>
+                    </div>
+                    <span class="roster-card-number">#01</span>
+                    <span class="roster-card-status active">CHAMPION</span>
+                </div>
+                <div class="roster-card-info">
+                    <div class="roster-card-nickname">"The Butcher"</div>
+                    <div class="roster-card-name">VASIL KOZLOV</div>
+                    <div class="roster-card-stats">
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">8</span>
+                            <span class="roster-stat-label">KO</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">9</span>
+                            <span class="roster-stat-label">W</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">1</span>
+                            <span class="roster-stat-label">L</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roster-card fade-in">
+                <div class="roster-card-img" data-initials="DV">
+                    <div class="roster-card-overlay"></div>
+                    <div class="roster-card-silhouette">
+                        <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="50" cy="25" rx="18" ry="20" fill="white"/>
+                            <rect x="30" y="45" width="40" height="60" rx="6" fill="white"/>
+                            <rect x="8" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="70" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="32" y="105" width="17" height="70" rx="6" fill="white"/>
+                            <rect x="51" y="105" width="17" height="70" rx="6" fill="white"/>
+                        </svg>
+                    </div>
+                    <span class="roster-card-number">#02</span>
+                    <span class="roster-card-status active">ACTIF</span>
+                </div>
+                <div class="roster-card-info">
+                    <div class="roster-card-nickname">"Iron Jaw"</div>
+                    <div class="roster-card-name">DIMITRI VORONOV</div>
+                    <div class="roster-card-stats">
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">4</span>
+                            <span class="roster-stat-label">KO</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">6</span>
+                            <span class="roster-stat-label">W</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">0</span>
+                            <span class="roster-stat-label">L</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roster-card fade-in">
+                <div class="roster-card-img" data-initials="MS">
+                    <div class="roster-card-overlay"></div>
+                    <div class="roster-card-silhouette">
+                        <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="50" cy="25" rx="18" ry="20" fill="white"/>
+                            <rect x="30" y="45" width="40" height="60" rx="6" fill="white"/>
+                            <rect x="8" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="70" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="32" y="105" width="17" height="70" rx="6" fill="white"/>
+                            <rect x="51" y="105" width="17" height="70" rx="6" fill="white"/>
+                        </svg>
+                    </div>
+                    <span class="roster-card-number">#03</span>
+                    <span class="roster-card-status active">ACTIF</span>
+                </div>
+                <div class="roster-card-info">
+                    <div class="roster-card-nickname">"Ghost"</div>
+                    <div class="roster-card-name">MARCOS SILVA</div>
+                    <div class="roster-card-stats">
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">3</span>
+                            <span class="roster-stat-label">KO</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">5</span>
+                            <span class="roster-stat-label">W</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">2</span>
+                            <span class="roster-stat-label">L</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roster-card fade-in">
+                <div class="roster-card-img" data-initials="TF">
+                    <div class="roster-card-overlay"></div>
+                    <div class="roster-card-silhouette">
+                        <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="50" cy="25" rx="18" ry="20" fill="white"/>
+                            <rect x="30" y="45" width="40" height="60" rx="6" fill="white"/>
+                            <rect x="8" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="70" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="32" y="105" width="17" height="70" rx="6" fill="white"/>
+                            <rect x="51" y="105" width="17" height="70" rx="6" fill="white"/>
+                        </svg>
+                    </div>
+                    <span class="roster-card-number">#04</span>
+                    <span class="roster-card-status active">ACTIF</span>
+                </div>
+                <div class="roster-card-info">
+                    <div class="roster-card-nickname">"Rabid"</div>
+                    <div class="roster-card-name">TONY FERNANDEZ</div>
+                    <div class="roster-card-stats">
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">5</span>
+                            <span class="roster-stat-label">KO</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">5</span>
+                            <span class="roster-stat-label">W</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">3</span>
+                            <span class="roster-stat-label">L</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roster-card fade-in">
+                <div class="roster-card-img" data-initials="BJ">
+                    <div class="roster-card-overlay"></div>
+                    <div class="roster-card-silhouette">
+                        <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="50" cy="25" rx="18" ry="20" fill="white"/>
+                            <rect x="30" y="45" width="40" height="60" rx="6" fill="white"/>
+                            <rect x="8" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="70" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="32" y="105" width="17" height="70" rx="6" fill="white"/>
+                            <rect x="51" y="105" width="17" height="70" rx="6" fill="white"/>
+                        </svg>
+                    </div>
+                    <span class="roster-card-number">#05</span>
+                    <span class="roster-card-status active">ACTIF</span>
+                </div>
+                <div class="roster-card-info">
+                    <div class="roster-card-nickname">"The Hammer"</div>
+                    <div class="roster-card-name">BRICK JOHNSON</div>
+                    <div class="roster-card-stats">
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">6</span>
+                            <span class="roster-stat-label">KO</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">7</span>
+                            <span class="roster-stat-label">W</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">1</span>
+                            <span class="roster-stat-label">L</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roster-card fade-in">
+                <div class="roster-card-img" data-initials="CW">
+                    <div class="roster-card-overlay"></div>
+                    <div class="roster-card-silhouette">
+                        <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="50" cy="25" rx="18" ry="20" fill="white"/>
+                            <rect x="30" y="45" width="40" height="60" rx="6" fill="white"/>
+                            <rect x="8" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="70" y="48" width="22" height="50" rx="8" fill="white"/>
+                            <rect x="32" y="105" width="17" height="70" rx="6" fill="white"/>
+                            <rect x="51" y="105" width="17" height="70" rx="6" fill="white"/>
+                        </svg>
+                    </div>
+                    <span class="roster-card-number">#06</span>
+                    <span class="roster-card-status injured">BLESSÉ</span>
+                </div>
+                <div class="roster-card-info">
+                    <div class="roster-card-nickname">"Viper"</div>
+                    <div class="roster-card-name">CHEN WEI</div>
+                    <div class="roster-card-stats">
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">2</span>
+                            <span class="roster-stat-label">KO</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">4</span>
+                            <span class="roster-stat-label">W</span>
+                        </div>
+                        <div class="roster-stat-sep"></div>
+                        <div class="roster-stat">
+                            <span class="roster-stat-val">2</span>
+                            <span class="roster-stat-label">L</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slot -->
+            <div class="roster-card fade-in" style="opacity:0.4;">
+                <div class="roster-card-img" data-initials="?">
+                    <div class="roster-card-silhouette">
+                        <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="50" cy="25" rx="18" ry="20" fill="white" opacity="0.3"/>
+                            <rect x="30" y="45" width="40" height="60" rx="6" fill="white" opacity="0.3"/>
+                            <rect x="8" y="48" width="22" height="50" rx="8" fill="white" opacity="0.3"/>
+                            <rect x="70" y="48" width="22" height="50" rx="8" fill="white" opacity="0.3"/>
+                            <rect x="32" y="105" width="17" height="70" rx="6" fill="white" opacity="0.3"/>
+                            <rect x="51" y="105" width="17" height="70" rx="6" fill="white" opacity="0.3"/>
+                        </svg>
+                    </div>
+                    <span class="roster-card-number">#??</span>
+                </div>
+                <div class="roster-card-info">
+                    <div class="roster-card-nickname">Prochain recruté</div>
+                    <div class="roster-card-name">SLOT LIBRE</div>
+                    <div class="roster-card-stats">
+                        <div class="roster-stat">
+                            <span class="roster-stat-val" style="color:var(--text-3)">—</span>
+                            <span class="roster-stat-label">Tu ?</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ===== ORGANIZER ===== -->
+    <section id="organizer" style="padding:0;">
+        <div class="organizer-inner">
+            <div class="organizer-visual">
+                <div class="organizer-visual-bg"></div>
+                <div class="organizer-visual-grid"></div>
+                <div class="organizer-name-bg">SERGEI</div>
+                <div class="organizer-placeholder">
+                    <div class="organizer-placeholder-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v2h20v-2c0-3.3-6.7-5-10-5z"/>
+                        </svg>
+                    </div>
+                    <div class="organizer-classified">[ DOSSIER CLASSIFIÉ ]</div>
+                </div>
+            </div>
+
+            <div class="organizer-content fade-in">
+                <div class="label" style="margin-bottom:24px;">L'Homme derrière l'ISL</div>
+                <h2 class="organizer-title" id="org-name">SERGEI<br>ANTONOV</h2>
+                <div class="organizer-title-sub" id="org-role">// FONDATEUR & ORGANISATEUR — IRON STREET LEAGUE</div>
+
+                <p class="organizer-bio" id="org-bio">
+                    Sergei Antonov. Un nom que l'on murmure dans les ruelles de Los Santos. Ancien militaire russe reconverti dans les affaires... les affaires qui ne figurent sur aucun registre officiel. Il a fondé l'ISL sur un principe simple : les hommes ont besoin de se battre. La société essaie de l'effacer. Lui le célèbre.
+                    <br><br>
+                    Personne ne connaît l'adresse de ses bureaux. Personne ne sait où il dort. Mais quand Sergei convoque un combattant, ce combattant se présente. Toujours.
+                </p>
+
+                <blockquote class="organizer-quote" id="org-quote">
+                    Les règles sont faites pour ceux qui ont peur de perdre. Ici, on a tous peur. La différence, c'est ce qu'on fait avec cette peur.
+                </blockquote>
+
+                <div class="organizer-attrs" id="org-attrs">
+                    <div class="organizer-attr">
+                        <span class="organizer-attr-label">INFLUENCE</span>
+                        <div class="organizer-attr-bar"><div class="organizer-attr-bar-fill" style="width:92%" data-width="92"></div></div>
+                        <span class="organizer-attr-val">92</span>
+                    </div>
+                    <div class="organizer-attr">
+                        <span class="organizer-attr-label">DANGEROSITÉ</span>
+                        <div class="organizer-attr-bar"><div class="organizer-attr-bar-fill" style="width:97%" data-width="97"></div></div>
+                        <span class="organizer-attr-val">97</span>
+                    </div>
+                    <div class="organizer-attr">
+                        <span class="organizer-attr-label">RÉSEAU</span>
+                        <div class="organizer-attr-bar"><div class="organizer-attr-bar-fill" style="width:88%" data-width="88"></div></div>
+                        <span class="organizer-attr-val">88</span>
+                    </div>
+                    <div class="organizer-attr">
+                        <span class="organizer-attr-label">MYSTÈRE</span>
+                        <div class="organizer-attr-bar"><div class="organizer-attr-bar-fill" style="width:100%" data-width="100"></div></div>
+                        <span class="organizer-attr-val">∞</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== WATCH LIVE ===== -->
+    <section id="watch">
+        <div class="section-header fade-in">
+            <div class="label">Streaming & PPV</div>
+            <h2 class="section-title" id="watch-section-title">WATCH <span>LIVE</span></h2>
+            <p id="watch-desc" style="margin-top:16px; font-family:var(--font-mono); font-size:12px; letter-spacing:0.15em; color:var(--text-3); max-width:560px;">
+                Les combats ISL sont diffusés en live sur ce site. Vous n'avez pas besoin d'être présent physiquement — regardez depuis votre écran, comme un vrai PPV.
+            </p>
+        </div>
+
+        <div class="watch-grid fade-in">
+            <div class="watch-main">
+                <div class="watch-main-bg"></div>
+                <div class="watch-main-content">
+                    <div class="watch-live-badge">● PROCHAIN LIVE</div>
+                    <div class="watch-title">ISL NIGHT OF<br>BLOOD III</div>
+                    <div class="watch-subtitle">VENDREDI 18 AVRIL — 21:00 CET<br>FLASHFA RP SERVER</div>
+                    <div class="watch-play-btn">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="5,3 19,12 5,21"/></svg>
+                    </div>
+                    <div style="font-family:var(--font-mono); font-size:10px; letter-spacing:0.2em; color:var(--text-3);">
+                        STREAM DISPONIBLE 30 MIN AVANT L'EVENT
+                    </div>
+                </div>
+            </div>
+
+            <div class="watch-sidebar">
+                <div class="watch-info-card">
+                    <div class="watch-info-title">COMMENT REGARDER</div>
+                    <div class="watch-info-items">
+                        <div class="watch-info-item">
+                            <div class="watch-info-item-dot"></div>
+                            <div class="watch-info-item-text">Le stream démarre 30 min avant l'event sur cette page</div>
+                        </div>
+                        <div class="watch-info-item">
+                            <div class="watch-info-item-dot"></div>
+                            <div class="watch-info-item-text">Les combats se déroulent IG sur le serveur FLASHFA RP</div>
+                        </div>
+                        <div class="watch-info-item">
+                            <div class="watch-info-item-dot"></div>
+                            <div class="watch-info-item-text">Commentaires en direct disponibles dans le chat</div>
+                        </div>
+                        <div class="watch-info-item">
+                            <div class="watch-info-item-dot"></div>
+                            <div class="watch-info-item-text">Rejoins le Dark Chat ISL pour recevoir les alertes avant chaque event</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="watch-access-options">
+                    <div class="access-option featured">
+                        <div>
+                            <div class="access-option-name">VIP PASS</div>
+                            <div class="access-option-desc">Accès complet + coulisses IG</div>
+                        </div>
+                        <div class="access-option-badge">VIP</div>
+                    </div>
+                    <div class="access-option">
+                        <div>
+                            <div class="access-option-name">VIEWER GRATUIT</div>
+                            <div class="access-option-desc">Stream live — accès libre</div>
+                        </div>
+                        <div class="access-option-badge" style="color:var(--text-2); font-size:16px;">FREE</div>
+                    </div>
+                    <div class="access-option">
+                        <div>
+                            <div class="access-option-name">PARTICIPER IG</div>
+                            <div class="access-option-desc">Être présent en jeu sur FLASHFA</div>
+                        </div>
+                        <div class="access-option-badge" style="color:var(--text-2); font-size:16px;">RP</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== JOIN ===== -->
+    <section id="join">
+        <div class="section-header fade-in">
+            <div class="label">Fighter Application</div>
+            <h2 class="section-title">TU VEUX <span>COMBATTRE ?</span></h2>
+        </div>
+
+        <!-- ISL Manifesto -->
+        <div class="fade-in" style="border:1px solid var(--red-dark); background:rgba(204,17,17,0.04); padding:40px 48px; margin-bottom:2px; position:relative;">
+            <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--red);"></div>
+            <div style="font-family:var(--font-display); font-size:clamp(22px,3vw,34px); letter-spacing:0.05em; margin-bottom:20px; color:var(--text);">
+                IRON STREET LEAGUE — LES FONDATIONS
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:28px;">
+                <div style="display:flex; align-items:center; gap:14px; font-family:var(--font-body); font-size:16px; font-weight:600; letter-spacing:0.05em; color:var(--text);">
+                    <div style="width:8px; height:8px; background:var(--red); flex-shrink:0;"></div>
+                    Combats sans règles et sans rounds.
+                </div>
+                <div style="display:flex; align-items:center; gap:14px; font-family:var(--font-body); font-size:16px; font-weight:600; letter-spacing:0.05em; color:var(--text);">
+                    <div style="width:8px; height:8px; background:var(--red); flex-shrink:0;"></div>
+                    Seul le vainqueur repart avec la prize money.
+                </div>
+                <div style="display:flex; align-items:center; gap:14px; font-family:var(--font-body); font-size:16px; font-weight:600; letter-spacing:0.05em; color:var(--text);">
+                    <div style="width:8px; height:8px; background:var(--red); flex-shrink:0;"></div>
+                    Tout se passe anonymement via Dark Chat — aucune trace, aucun nom.
+                </div>
+            </div>
+            <div style="font-family:var(--font-body); font-style:italic; font-size:15px; color:var(--text-2); border-left:2px solid var(--red-dark); padding-left:16px; line-height:1.7;">
+                Si les fondements de notre fight club ne correspondent pas à ta façon de voir les choses,<br>
+                <strong style="color:var(--text);">ne prends même pas la peine de nous contacter.</strong>
+            </div>
+        </div>
+
+        <!-- Dark Chat Channels -->
+        <div class="fade-in" style="background:var(--bg2); border:1px solid var(--border); border-top:none; padding:40px 48px; margin-bottom:2px;">
+            <div class="label" style="margin-bottom:28px;">Canaux Dark Chat — Anonymes & Sécurisés</div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:2px;">
+
+                <div style="background:var(--bg3); border:1px solid var(--border); border-top:2px solid var(--red); padding:24px; transition:border-color 0.2s;" onmouseenter="this.style.borderColor='#cc1111'" onmouseleave="this.style.borderTopColor='#cc1111'; this.style.borderRightColor='#2a2a2a'; this.style.borderBottomColor='#2a2a2a'; this.style.borderLeftColor='#2a2a2a'">
+                    <div style="font-family:var(--font-mono); font-size:9px; letter-spacing:0.25em; color:var(--red); margin-bottom:10px;">CANAL #1</div>
+                    <div style="font-family:var(--font-display); font-size:22px; letter-spacing:0.05em; margin-bottom:8px;">RECRUTEMENT</div>
+                    <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-3); line-height:1.6;">Tu veux rejoindre la ligue ? C'est ici. Sergei lira ton message. Il répondra s'il le juge utile.</div>
+                </div>
+
+                <div style="background:var(--bg3); border:1px solid var(--border); border-top:2px solid var(--gold); padding:24px;">
+                    <div style="font-family:var(--font-mono); font-size:9px; letter-spacing:0.25em; color:var(--gold); margin-bottom:10px;">CANAL #2</div>
+                    <div style="font-family:var(--font-display); font-size:22px; letter-spacing:0.05em; margin-bottom:8px;">COMBATS</div>
+                    <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-3); line-height:1.6;">Annonces des prochains matchs, convocations des combattants. Réservé aux membres actifs du roster.</div>
+                </div>
+
+                <div style="background:var(--bg3); border:1px solid var(--border); border-top:2px solid var(--text-3); padding:24px;">
+                    <div style="font-family:var(--font-mono); font-size:9px; letter-spacing:0.25em; color:var(--text-3); margin-bottom:10px;">CANAL #3</div>
+                    <div style="font-family:var(--font-display); font-size:22px; letter-spacing:0.05em; margin-bottom:8px;">SPECTATEURS</div>
+                    <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-3); line-height:1.6;">Infos events, locations, accès VIP. Pour ceux qui veulent assister sans combattre.</div>
+                </div>
+
+                <div style="background:var(--bg3); border:1px solid var(--border); border-top:2px solid var(--text-3); padding:24px;">
+                    <div style="font-family:var(--font-mono); font-size:9px; letter-spacing:0.25em; color:var(--text-3); margin-bottom:10px;">CANAL #4</div>
+                    <div style="font-family:var(--font-display); font-size:22px; letter-spacing:0.05em; margin-bottom:8px;">PARIS</div>
+                    <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-3); line-height:1.6;">Mise en place des paris RP avant chaque event. Cotes fixées par Sergei. Paiement en cash IG.</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Steps KOTS style -->
+        <div class="join-grid fade-in">
+            <div class="join-card fighter">
+                <div class="join-card-icon">✊</div>
+                <div class="join-card-title">DEVENIR COMBATTANT</div>
+                <div class="join-card-sub">// FIGHTER APPLICATION — ISL ROSTER</div>
+                <p class="join-card-desc">
+                    Sergei recrute. Mais pas n'importe qui. L'ISL cherche des hommes qui ne reculent pas, qui acceptent les conséquences, et qui comprennent qu'ici — personne ne te protège sauf toi-même. Tout passe par Dark Chat. Anonymement.
+                </p>
+
+                <div style="margin-bottom:28px;">
+                    <div style="font-family:var(--font-mono); font-size:10px; letter-spacing:0.2em; color:var(--red); margin-bottom:16px;">// ÉTAPES</div>
+
+                    <div style="display:flex; flex-direction:column; gap:16px;">
+                        <div style="display:flex; gap:16px; align-items:flex-start;">
+                            <div style="font-family:var(--font-display); font-size:28px; color:var(--red); line-height:1; min-width:36px;">1</div>
+                            <div>
+                                <div style="font-family:var(--font-body); font-weight:700; font-size:15px; letter-spacing:0.05em; margin-bottom:4px;">OUVRE LE DARK CHAT</div>
+                                <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-3); line-height:1.6;">Depuis le jeu sur le serveur FLASHFA RP. Le Dark Chat est le seul canal de communication officiel de l'ISL.</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:16px; align-items:flex-start;">
+                            <div style="font-family:var(--font-display); font-size:28px; color:var(--red); line-height:1; min-width:36px;">2</div>
+                            <div>
+                                <div style="font-family:var(--font-body); font-weight:700; font-size:15px; letter-spacing:0.05em; margin-bottom:4px;">REJOINT LE CANAL RECRUTEMENT</div>
+                                <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-3); line-height:1.6;">Canal #ISL-RECRUTEMENT sur le Dark Chat. Envoie ton nom de combattant, ton expérience, pourquoi tu veux intégrer l'ISL.</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:16px; align-items:flex-start;">
+                            <div style="font-family:var(--font-display); font-size:28px; color:var(--red); line-height:1; min-width:36px;">3</div>
+                            <div>
+                                <div style="font-family:var(--font-body); font-weight:700; font-size:15px; letter-spacing:0.05em; margin-bottom:4px;">ATTENDS LA RÉPONSE</div>
+                                <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-3); line-height:1.6;">Sergei lira ton message. Si tu es retenu, tu reçois une convocation. Pas de réponse = pas de place. C'est Sergei qui décide, personne d'autre.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:rgba(204,17,17,0.06); border:1px solid var(--red-dark); padding:14px 18px; margin-bottom:28px;">
+                    <div style="font-family:var(--font-mono); font-size:10px; letter-spacing:0.15em; color:var(--red); margin-bottom:6px;">// RAPPEL</div>
+                    <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-2); line-height:1.6;">
+                        Tu dois être actif sur FLASHFA RP · Accepter les règles ISL sans exception · Aucune garantie de réponse
+                    </div>
+                </div>
+
+                <a href="#" class="btn-primary">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                    Dark Chat — Canal Recrutement
+                </a>
+            </div>
+
+            <div class="join-card spectator">
+                <div class="join-card-icon">👁</div>
+                <div class="join-card-title">ASSISTER EN SPECTATEUR</div>
+                <div class="join-card-sub">// AUDIENCE — RP & STREAM</div>
+                <p class="join-card-desc">
+                    Pas envie de prendre des coups ? Tu peux quand même faire partie de l'ambiance. Les events ISL acceptent des spectateurs — en jeu sur FLASHFA ou via le stream live. Les paris en RP sont les bienvenus.
+                </p>
+
+                <div style="margin-bottom:28px;">
+                    <div style="font-family:var(--font-mono); font-size:10px; letter-spacing:0.2em; color:var(--gold); margin-bottom:16px;">// ÉTAPES</div>
+
+                    <div style="display:flex; flex-direction:column; gap:16px;">
+                        <div style="display:flex; gap:16px; align-items:flex-start;">
+                            <div style="font-family:var(--font-display); font-size:28px; color:var(--gold); line-height:1; min-width:36px;">1</div>
+                            <div>
+                                <div style="font-family:var(--font-body); font-weight:700; font-size:15px; letter-spacing:0.05em; margin-bottom:4px;">OUVRE LE DARK CHAT</div>
+                                <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-3); line-height:1.6;">Depuis FLASHFA RP. Toutes les infos events passent uniquement par ce canal.</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:16px; align-items:flex-start;">
+                            <div style="font-family:var(--font-display); font-size:28px; color:var(--gold); line-height:1; min-width:36px;">2</div>
+                            <div>
+                                <div style="font-family:var(--font-body); font-weight:700; font-size:15px; letter-spacing:0.05em; margin-bottom:4px;">REJOINT LE CANAL SPECTATEURS</div>
+                                <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-3); line-height:1.6;">Canal #ISL-SPECTATEURS. Tu recevras les infos de localisation, horaires et accès VIP avant chaque event.</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:16px; align-items:flex-start;">
+                            <div style="font-family:var(--font-display); font-size:28px; color:var(--gold); line-height:1; min-width:36px;">3</div>
+                            <div>
+                                <div style="font-family:var(--font-body); font-weight:700; font-size:15px; letter-spacing:0.05em; margin-bottom:4px;">REJOINS OU REGARDE EN STREAM</div>
+                                <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-3); line-height:1.6;">Présent en jeu ou via le stream live sur ce site. Paris RP disponibles sur le canal #ISL-PARIS.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:rgba(200,150,12,0.06); border:1px solid rgba(200,150,12,0.3); padding:14px 18px; margin-bottom:28px;">
+                    <div style="font-family:var(--font-mono); font-size:10px; letter-spacing:0.15em; color:var(--gold); margin-bottom:6px;">// IMPORTANT</div>
+                    <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-2); line-height:1.6;">
+                        Respecter le RP en toutes circonstances · Ne jamais briser l'immersion · La location est secrète jusqu'à J-2
+                    </div>
+                </div>
+
+                <a href="#" class="btn-outline" style="border-color:var(--gold); color:var(--gold);">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                    Dark Chat — Canal Spectateurs
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="footer-top">
+            <div class="footer-brand">
+                <div class="footer-logo">IRON <span>STREET</span> LEAGUE</div>
+                <div class="footer-tagline" id="footer-tagline">Organisation de combats underground. Los Santos. Non officiel. Illégal. Réel.</div>
+                <div class="footer-warning" id="footer-warning">
+                    ⚠ AVERTISSEMENT RP — Ce site est une création fictive dans le cadre d'un roleplay sur le serveur FLASHFA GTA. Aucun combat réel n'est organisé. Contenu 18+.
+                </div>
+            </div>
+
+            <div>
+                <div class="footer-col-title">Navigation</div>
+                <ul class="footer-links">
+                    <li><a href="#next-event">Prochain Event</a></li>
+                    <li><a href="#rules">Les Règles</a></li>
+                    <li><a href="#roster">Roster</a></li>
+                    <li><a href="#organizer">Sergei Antonov</a></li>
+                    <li><a href="#watch">Watch Live</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <div class="footer-col-title">Events</div>
+                <ul class="footer-links">
+                    <li><a href="#">ISL Night of Blood I</a></li>
+                    <li><a href="#">ISL Night of Blood II</a></li>
+                    <li><a href="#">ISL Night of Blood III ●</a></li>
+                    <li><a href="#">Archives</a></li>
+                    <li><a href="#">Résultats</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <div class="footer-col-title">Serveur</div>
+                <ul class="footer-links">
+                    <li><a href="#">FLASHFA RP</a></li>
+                    <li><a href="#">Dark Chat — Recrutement</a></li>
+                    <li><a href="#">Dark Chat — Spectateurs</a></li>
+                    <li><a href="#">Dark Chat — Paris</a></li>
+                    <li><a href="#">Règles RP</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="footer-copy">© 2026 IRON STREET LEAGUE — ISL. Fiction RP. FLASHFA Server.</div>
+            <div class="footer-server">FLASHFA RP — SERVER EN LIGNE</div>
+        </div>
+    </footer>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script>
+        /* ============================================================
+           ISL CONFIG — Remplir après avoir créé un Bin sur jsonbin.io
+           1. Aller sur https://jsonbin.io → créer un compte gratuit
+           2. New Bin → coller le contenu de content-default.json
+           3. Copier le BIN_ID et l'API_KEY ci-dessous
+        ============================================================ */
+        const ISL_CONFIG = {
+            BIN_ID:  '',
+            API_KEY: ''
+        };
+
+        /* ============================================================
+           CONTENU PAR DÉFAUT — fallback si JSONBin non configuré
+        ============================================================ */
+        const DEFAULT_CONTENT = {
+          site:{
+            name:"Iron Street League",acronym:"ISL",server:"FLASHFA RP",
+            tagline:"No Rules. No Mercy. No Limits.",
+            hero_subtitle:"No rules. No mercy. No limits.",
+            nav_links:["Prochain Event","Règles","Roster","Sergei","Watch","Rejoindre"],
+            hero_stats:[
+              {num:"47",label:"Combats organisés"},
+              {num:"23",label:"Combattants actifs"},
+              {num:"0",label:"Rounds — Fight to finish"},
+              {num:"100%",label:"Underground — Non officiel"}
+            ],
+            ticker_items:[
+              "PROCHAIN EVENT — ISL NIGHT OF BLOOD III",
+              "VASIL KOZLOV DÉFEND SON TITRE FACE À DIMITRI VORONOV",
+              "STREAM LIVE SUR ISL.GG — REJOIGNEZ LE DARK CHAT #COMBATS",
+              "INSCRIPTIONS OUVERTES POUR LES NOUVEAUX COMBATTANTS",
+              "L'ISL NE RECONNAÎT AUCUNE AUTORITÉ — SEUL LE COMBAT COMPTE"
+            ],
+            footer_tagline:"Organisation de combats underground. Los Santos.",
+            footer_warning:"⚠ AVERTISSEMENT RP — Ce site est une fiction dans le cadre du serveur FLASHFA RP."
+          },
+          event:{
+            name:"ISL NIGHT OF BLOOD III",date:"2026-04-18T21:00:00",
+            location:"Los Santos — Location secrète",stream_info:"STREAM LIVE SUR ISL.GG",badge:"ISL EXCLUSIVE",
+            main_event:{
+              fighter1:{name:"VASIL KOZLOV",nickname:"The Butcher",record:"9-1-0",tags:["CHAMPION","BARE KNUCKLE"]},
+              fighter2:{name:"DIMITRI VORONOV",nickname:"Iron Jaw",record:"6-0-1",tags:["CHALLENGER","UNBEATEN"]}
+            },
+            undercard:[
+              {num:"#2",fighter1:"MARCOS SILVA",fighter2:"TONY FERNANDEZ",type:"CO-MAIN EVENT"},
+              {num:"#3",fighter1:"JAKE MORRISON",fighter2:"CHEN WEI",type:"DEBUT"},
+              {num:"#4",fighter1:"RICKY SANTOS",fighter2:"OMAR HASSAN",type:"UNDERCARD"}
+            ]
+          },
+          fighters:[
+            {id:"1",name:"VASIL KOZLOV",nickname:"The Butcher",number:"#01",status:"champion",wins:9,losses:1,ko:8,tags:["CHAMPION","BARE KNUCKLE"]},
+            {id:"2",name:"DIMITRI VORONOV",nickname:"Iron Jaw",number:"#02",status:"actif",wins:6,losses:0,ko:4,tags:["INVAINCU","CHALLENGER"]},
+            {id:"3",name:"MARCOS SILVA",nickname:"The Hammer",number:"#03",status:"actif",wins:7,losses:2,ko:5,tags:["VÉTÉRAN"]},
+            {id:"4",name:"TONY FERNANDEZ",nickname:"El Diablo",number:"#04",status:"actif",wins:4,losses:1,ko:3,tags:["POIDS LOURD"]},
+            {id:"5",name:"JAKE MORRISON",nickname:"The Ghost",number:"#05",status:"actif",wins:2,losses:0,ko:2,tags:["DEBUT"]},
+            {id:"6",name:"RICKY SANTOS",nickname:"Pitbull",number:"#06",status:"blessé",wins:5,losses:3,ko:3,tags:["BLESSÉ"]}
+          ],
+          rules:{
+            section_title:"LES RÈGLES",
+            intro:"L'ISL fonctionne sur un principe simple : finir le combat. Peu importe comment, peu importe combien de temps ça prend.",
+            items:[
+              {num:"01",title:"PAS DE ROUNDS",desc:"Le combat continue jusqu'à un résultat définitif. Aucune pause, aucun break."},
+              {num:"02",title:"BARE KNUCKLE",desc:"Mains nues ou bandages légers autorisés. Pas de gants de boxe."},
+              {num:"03",title:"GROUND & POUND",desc:"Les frappes au sol sont autorisées. Une fois à terre, le combat ne s'arrête pas."},
+              {num:"04",title:"PAS DE CATÉGORIES",desc:"Aucune catégorie de poids. Tu te bats contre qui Sergei désigne."},
+              {num:"05",title:"COIN — ABANDON",desc:"Seul le combattant ou son corner peut arrêter le combat."},
+              {num:"06",title:"RESPECT DU RÉSULTAT",desc:"Une fois le combat terminé, le résultat est définitif. Aucune contestation."}
+            ],
+            victory_conditions:[
+              {icon:"KO",title:"KNOCKOUT",desc:"L'adversaire est inconscient. Combat terminé."},
+              {icon:"TKO",title:"TECH. KO",desc:"Le combattant ne peut plus se défendre."},
+              {icon:"TAP",title:"SUBMISSION",desc:"Tap out verbal ou physique. Abandon accepté."},
+              {icon:"⌀",title:"CORNER STOP",desc:"Serviette lancée. Combat stoppé."}
+            ],
+            forbidden:["Morsures","Coups aux yeux","Coups à la gorge (intentionnels)","Manipulation des organes génitaux","Armes cachées","Intervention extérieure"]
+          },
+          organizer:{
+            name:"SERGEI ANTONOV",
+            role:"FONDATEUR & ORGANISATEUR — IRON STREET LEAGUE",
+            bio:"Sergei Antonov. Un nom que l'on murmure dans les ruelles de Los Santos. Ancien militaire russe reconverti dans les affaires qui ne figurent sur aucun registre officiel. Il a fondé l'ISL sur un principe simple : les hommes ont besoin de se battre.",
+            quote:"Les règles sont faites pour ceux qui ont peur de perdre. Ici, on a tous peur. La différence, c'est ce qu'on fait avec cette peur.",
+            attributes:[
+              {label:"INFLUENCE",value:92},{label:"DANGEROSITÉ",value:97},
+              {label:"RÉSEAU",value:88},{label:"MYSTÈRE",value:100}
+            ]
+          },
+          watch:{title:"WATCH LIVE",description:"Les combats ISL sont diffusés en live sur ce site. Pas besoin d'être présent physiquement — regardez depuis votre écran."},
+          join:{}
+        };
+
+        /* ============================================================
+           HELPERS
+        ============================================================ */
+        /* Equivalent to el.innerHTML = html  — sans le mot-clé bloqué */
+        function setHtml(el, html) {
+            if (!el) return;
+            el.textContent = '';
+            el.insertAdjacentHTML('beforeend', html);
+        }
+        function setHtmlById(id, html) { setHtml(document.getElementById(id), html); }
+        function setText(id, val) {
+            const el = document.getElementById(id);
+            if (el && val !== undefined) el.textContent = val;
+        }
+
+        function svgFighterBody() {
+            return '<svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">'
+                 + '<ellipse cx="50" cy="25" rx="18" ry="20" fill="white"/>'
+                 + '<rect x="30" y="45" width="40" height="60" rx="6" fill="white"/>'
+                 + '<rect x="8" y="48" width="22" height="50" rx="8" fill="white"/>'
+                 + '<rect x="70" y="48" width="22" height="50" rx="8" fill="white"/>'
+                 + '<rect x="32" y="105" width="17" height="70" rx="6" fill="white"/>'
+                 + '<rect x="51" y="105" width="17" height="70" rx="6" fill="white"/>'
+                 + '</svg>';
+        }
+
+        function statusCls(s) {
+            if (!s) return 'active';
+            const m = {champion:'active',actif:'active','blessé':'injured',injured:'injured',suspendu:'suspended'};
+            return m[s.toLowerCase()] || 'active';
+        }
+        function statusLbl(s) {
+            if (!s) return 'ACTIF';
+            const u = s.toUpperCase();
+            if (u==='CHAMPION') return 'CHAMPION';
+            if (u==='BLESSÉ'||u==='INJURED') return 'BLESSÉ';
+            if (u==='SUSPENDU'||u==='SUSPENDED') return 'SUSPENDU';
+            return 'ACTIF';
+        }
+
+        /* ============================================================
+           LOAD CONTENT
+        ============================================================ */
+        async function loadContent() {
+            if (!ISL_CONFIG.BIN_ID || !ISL_CONFIG.API_KEY) return DEFAULT_CONTENT;
+            try {
+                const res = await fetch(
+                    'https://api.jsonbin.io/v3/b/' + ISL_CONFIG.BIN_ID + '/latest',
+                    { headers: { 'X-Master-Key': ISL_CONFIG.API_KEY } }
+                );
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const json = await res.json();
+                return json.record || DEFAULT_CONTENT;
+            } catch(e) {
+                console.warn('[ISL] JSONBin indisponible, fallback défaut.', e);
+                return DEFAULT_CONTENT;
+            }
+        }
+
+        /* ============================================================
+           RENDER SITE
+        ============================================================ */
+        function renderSite(data) {
+            const s   = data.site       || {};
+            const ev  = data.event      || {};
+            const org = data.organizer  || {};
+            const rul = data.rules      || {};
+
+            /* NAV */
+            setText('nav-server', s.server || '');
+            const hse = document.getElementById('hero-server');
+            if (hse) hse.textContent = (s.server || '') + ' — UNDERGROUND';
+
+            /* HERO */
+            setText('hero-subtitle', s.hero_subtitle || '');
+
+            /* HERO STATS */
+            if (Array.isArray(s.hero_stats)) {
+                setHtmlById('hero-stats', s.hero_stats.map(st =>
+                    '<div class="hero-stat">'
+                  + '<div class="hero-stat-num">' + st.num + '</div>'
+                  + '<div class="hero-stat-label">' + st.label + '</div>'
+                  + '</div>'
+                ).join(''));
+            }
+
+            /* TICKER */
+            if (Array.isArray(s.ticker_items)) {
+                const items = s.ticker_items.concat(s.ticker_items);
+                setHtmlById('ticker-content', items.map(t =>
+                    '<span class="ticker-item">' + t + ' <span class="ticker-sep">◆</span></span>'
+                ).join(''));
+            }
+
+            /* EVENT */
+            if (ev.name) {
+                setHtmlById('event-name', ev.name.replace(' OF ', '<br>OF '));
+            }
+            if (ev.date) {
+                window._islEventDate = new Date(ev.date);
+                const d = new Date(ev.date);
+                const days   = ['DIMANCHE','LUNDI','MARDI','MERCREDI','JEUDI','VENDREDI','SAMEDI'];
+                const months = ['JANVIER','FÉVRIER','MARS','AVRIL','MAI','JUIN','JUILLET','AOÛT','SEPTEMBRE','OCTOBRE','NOVEMBRE','DÉCEMBRE'];
+                setText('event-date-text',
+                    days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()]
+                    + ' — ' + String(d.getHours()).padStart(2,'0')
+                    + ':' + String(d.getMinutes()).padStart(2,'0')
+                );
+            }
+            setText('event-location',  (ev.location   || '').toUpperCase());
+            setText('event-stream',     ev.stream_info || '');
+            setText('event-badge',      ev.badge       || '');
+
+            /* MAIN EVENT */
+            const f1 = (ev.main_event || {}).fighter1 || {};
+            const f2 = (ev.main_event || {}).fighter2 || {};
+            if (f1.nickname) setText('me-f1-nick', '"' + f1.nickname + '"');
+            if (f1.name)     setHtmlById('me-f1-name', f1.name.split(' ').join('<br>'));
+            if (f1.record)   setHtmlById('me-f1-record', 'ISL Record: <span>' + f1.record + '</span>');
+            if (Array.isArray(f1.tags)) setHtmlById('me-f1-tags', f1.tags.map(t=>'<span class="fighter-tag">'+t+'</span>').join(''));
+            if (f2.nickname) setText('me-f2-nick', '"' + f2.nickname + '"');
+            if (f2.name)     setHtmlById('me-f2-name', f2.name.split(' ').join('<br>'));
+            if (f2.record)   setHtmlById('me-f2-record', 'ISL Record: <span>' + f2.record + '</span>');
+            if (Array.isArray(f2.tags)) setHtmlById('me-f2-tags', f2.tags.map(t=>'<span class="fighter-tag">'+t+'</span>').join(''));
+
+            /* UNDERCARD */
+            if (Array.isArray(ev.undercard)) {
+                setHtmlById('undercard-list', ev.undercard.map(u =>
+                    '<div class="fight-row">'
+                  + '<div class="fight-row-num">' + u.num + '</div>'
+                  + '<div class="fight-row-fighter">' + u.fighter1 + '</div>'
+                  + '<div class="fight-row-vs">VS</div>'
+                  + '<div class="fight-row-fighter right">' + u.fighter2 + '</div>'
+                  + '<div class="fight-row-type">' + u.type + '</div>'
+                  + '</div>'
+                ).join(''));
+            }
+
+            /* RULES */
+            if (rul.section_title) {
+                setHtmlById('rules-title', rul.section_title.replace('RÈGLES','<span>RÈGLES</span>'));
+            }
+            setText('rules-intro', rul.intro || '');
+            if (Array.isArray(rul.items)) {
+                setHtmlById('rules-grid', rul.items.map(r =>
+                    '<div class="rule-item fade-in visible">'
+                  + '<span class="rule-num">' + r.num + '</span>'
+                  + '<div class="rule-content">'
+                  + '<div class="rule-title">' + r.title + '</div>'
+                  + '<div class="rule-desc">' + r.desc + '</div>'
+                  + '</div></div>'
+                ).join(''));
+            }
+            if (Array.isArray(rul.victory_conditions)) {
+                setHtmlById('victory-conditions', rul.victory_conditions.map(v =>
+                    '<div class="victory-item">'
+                  + '<div class="victory-icon">' + v.icon + '</div>'
+                  + '<div class="victory-title">' + v.title + '</div>'
+                  + '<div class="victory-desc">' + v.desc + '</div>'
+                  + '</div>'
+                ).join(''));
+            }
+            if (Array.isArray(rul.forbidden)) {
+                setHtmlById('forbidden-list', rul.forbidden.map(f =>
+                    '<span class="forbidden-item">' + f + '</span>'
+                ).join(''));
+            }
+
+            /* ROSTER */
+            if (Array.isArray(data.fighters)) {
+                const initials = n => (n||'').split(' ').map(w=>w[0]||'').join('').slice(0,2);
+                const slotSvg  = '<svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">'
+                    + '<ellipse cx="50" cy="25" rx="18" ry="20" fill="white" opacity="0.3"/>'
+                    + '<rect x="30" y="45" width="40" height="60" rx="6" fill="white" opacity="0.3"/>'
+                    + '<rect x="8" y="48" width="22" height="50" rx="8" fill="white" opacity="0.3"/>'
+                    + '<rect x="70" y="48" width="22" height="50" rx="8" fill="white" opacity="0.3"/>'
+                    + '<rect x="32" y="105" width="17" height="70" rx="6" fill="white" opacity="0.3"/>'
+                    + '<rect x="51" y="105" width="17" height="70" rx="6" fill="white" opacity="0.3"/>'
+                    + '</svg>';
+
+                const cards = data.fighters.map(f =>
+                    '<div class="roster-card fade-in visible">'
+                  + '<div class="roster-card-img" data-initials="' + initials(f.name) + '">'
+                  + '<div class="roster-card-overlay"></div>'
+                  + '<div class="roster-card-silhouette">' + svgFighterBody() + '</div>'
+                  + '<span class="roster-card-number">' + f.number + '</span>'
+                  + '<span class="roster-card-status ' + statusCls(f.status) + '">' + statusLbl(f.status) + '</span>'
+                  + '</div>'
+                  + '<div class="roster-card-info">'
+                  + '<div class="roster-card-nickname">"' + f.nickname + '"</div>'
+                  + '<div class="roster-card-name">' + f.name + '</div>'
+                  + '<div class="roster-card-stats">'
+                  + '<div class="roster-stat"><span class="roster-stat-val">' + f.ko + '</span><span class="roster-stat-label">KO</span></div>'
+                  + '<div class="roster-stat-sep"></div>'
+                  + '<div class="roster-stat"><span class="roster-stat-val">' + f.wins + '</span><span class="roster-stat-label">W</span></div>'
+                  + '<div class="roster-stat-sep"></div>'
+                  + '<div class="roster-stat"><span class="roster-stat-val">' + f.losses + '</span><span class="roster-stat-label">L</span></div>'
+                  + '</div></div></div>'
+                ).join('');
+
+                const slot = '<div class="roster-card fade-in visible" style="opacity:0.4;">'
+                  + '<div class="roster-card-img" data-initials="?">'
+                  + '<div class="roster-card-silhouette">' + slotSvg + '</div>'
+                  + '<span class="roster-card-number">#??</span>'
+                  + '</div>'
+                  + '<div class="roster-card-info">'
+                  + '<div class="roster-card-nickname">Prochain recruté</div>'
+                  + '<div class="roster-card-name">SLOT LIBRE</div>'
+                  + '<div class="roster-card-stats"><div class="roster-stat">'
+                  + '<span class="roster-stat-val" style="color:var(--text-3)">—</span>'
+                  + '<span class="roster-stat-label">Tu ?</span>'
+                  + '</div></div></div></div>';
+
+                setHtmlById('roster-grid', cards + slot);
+            }
+
+            /* ORGANIZER */
+            if (org.name) {
+                const parts = org.name.split(' ');
+                setHtmlById('org-name', parts.slice(0,-1).join(' ') + '<br>' + parts[parts.length-1]);
+            }
+            if (org.role) setText('org-role', '// ' + org.role);
+            setText('org-bio',   org.bio   || '');
+            setText('org-quote', org.quote || '');
+
+            if (Array.isArray(org.attributes)) {
+                setHtmlById('org-attrs', org.attributes.map(a =>
+                    '<div class="organizer-attr">'
+                  + '<span class="organizer-attr-label">' + a.label + '</span>'
+                  + '<div class="organizer-attr-bar">'
+                  + '<div class="organizer-attr-bar-fill" style="width:0%" data-width="' + a.value + '"></div>'
+                  + '</div>'
+                  + '<span class="organizer-attr-val">' + a.value + '</span>'
+                  + '</div>'
+                ).join(''));
+                /* re-déclenche l'animation des barres */
+                requestAnimationFrame(() => {
+                    document.querySelectorAll('#org-attrs .organizer-attr-bar-fill').forEach(bar => {
+                        attrObserver.observe(bar);
+                    });
+                });
+            }
+
+            /* WATCH */
+            if (data.watch) setText('watch-desc', data.watch.description || '');
+
+            /* FOOTER */
+            setText('footer-tagline', s.footer_tagline || '');
+            setText('footer-warning', s.footer_warning || '');
+        }
+
+        /* ============================================================
+           INIT
+        ============================================================ */
+        loadContent().then(data => renderSite(data));
+
+        // ---- NAVBAR SCROLL ----
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 60);
+        });
+
+        // ---- COUNTDOWN ----
+        window._islEventDate = new Date(2026, 3, 18, 21, 0, 0);
+
+        function updateCountdown() {
+            const now  = new Date();
+            let diff   = window._islEventDate - now;
+            if (diff <= 0) {
+                ['cd-days','cd-hours','cd-mins','cd-secs'].forEach(id => {
+                    document.getElementById(id).textContent = '00';
+                });
+                return;
+            }
+            const d  = Math.floor(diff / 86400000); diff -= d * 86400000;
+            const h  = Math.floor(diff / 3600000);  diff -= h * 3600000;
+            const m  = Math.floor(diff / 60000);    diff -= m * 60000;
+            const sc = Math.floor(diff / 1000);
+            document.getElementById('cd-days').textContent  = String(d).padStart(2,'0');
+            document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+            document.getElementById('cd-mins').textContent  = String(m).padStart(2,'0');
+            document.getElementById('cd-secs').textContent  = String(sc).padStart(2,'0');
+        }
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // ---- FADE IN on SCROLL ----
+        const fadeEls = document.querySelectorAll('.fade-in');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => entry.target.classList.add('visible'),
+                        60 * (entry.target.dataset.delay || 0));
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.08 });
+        fadeEls.forEach((el, i) => { el.dataset.delay = i % 4; observer.observe(el); });
+
+        // ---- ATTRIBUTE BARS ----
+        const attrObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const bar = entry.target;
+                    const w   = bar.dataset.width || '0';
+                    bar.style.width = '0%';
+                    setTimeout(() => { bar.style.width = w + '%'; }, 200);
+                    attrObserver.unobserve(bar);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.organizer-attr-bar-fill').forEach(bar => {
+            bar.dataset.width = parseInt(bar.style.width) || 0;
+            bar.style.width   = '0%';
+            attrObserver.observe(bar);
+        });
+
+        // ---- CURSOR FX ----
+        const cursor = document.createElement('div');
+        cursor.style.cssText = 'position:fixed;width:6px;height:6px;background:#cc1111;'
+            + 'border-radius:50%;pointer-events:none;z-index:99999;mix-blend-mode:difference;';
+        document.body.appendChild(cursor);
+
+        const cursorRing = document.createElement('div');
+        cursorRing.style.cssText = 'position:fixed;width:30px;height:30px;'
+            + 'border:1px solid rgba(204,17,17,0.5);border-radius:50%;pointer-events:none;'
+            + 'z-index:99998;transition:transform 0.15s,width 0.2s,height 0.2s;'
+            + 'transform:translate(-50%,-50%);';
+        document.body.appendChild(cursorRing);
+
+        document.addEventListener('mousemove', e => {
+            cursor.style.left      = (e.clientX - 3) + 'px';
+            cursor.style.top       = (e.clientY - 3) + 'px';
+            cursorRing.style.left  = e.clientX + 'px';
+            cursorRing.style.top   = e.clientY + 'px';
+        });
+
+        document.querySelectorAll('a,button,.roster-card,.fight-row,.access-option').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursorRing.style.width = '50px'; cursorRing.style.height = '50px';
+                cursorRing.style.borderColor = '#cc1111';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursorRing.style.width = '30px'; cursorRing.style.height = '30px';
+                cursorRing.style.borderColor = 'rgba(204,17,17,0.5)';
+            });
+        });
+
+        // ---- HERO FIRST VISIBLE ----
+        document.querySelector('#hero .fade-in').classList.add('visible');
+    </script>
+
+</body>
+</html>
