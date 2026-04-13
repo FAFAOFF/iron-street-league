@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACCES CLASSE -- ISL NIVEAU 5</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:    #050505;
+            --red:   #cc1111;
+            --red2:  #ff2222;
+            --green: #00cc55;
+            --text:  #e8e4df;
+            --dim:   #555;
+            --font-d: 'Bebas Neue', sans-serif;
+            --font-m: 'IBM Plex Mono', monospace;
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-m);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Scanlines */
+        body::before {
+            content:'';
+            position:fixed; inset:0; z-index:9999;
+            background:repeating-linear-gradient(
+                to bottom,
+                transparent 0px, transparent 2px,
+                rgba(0,0,0,0.13) 2px, rgba(0,0,0,0.13) 4px
+            );
+            pointer-events:none;
+        }
+
+        body::after {
+            content:'';
+            position:fixed; inset:0; z-index:9998;
+            background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+            opacity:0.035;
+            pointer-events:none;
+        }
+
+        body.alert-flash { animation: body-flash 0.15s step-end 6; }
+        @keyframes body-flash {
+            0%,100% { background: var(--bg); }
+            50%     { background: rgba(120,0,0,0.4); }
+        }
+
+        .wrap { width: min(680px, 94vw); position: relative; }
+
+        /* TOP BAR */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(204,17,17,0.25);
+            margin-bottom: 28px;
+        }
+        .top-bar-left { font-size:8px; letter-spacing:0.3em; color:var(--red); }
+        .top-bar-right { font-size:8px; letter-spacing:0.2em; color:var(--dim); }
+        .status-dot {
+            display:inline-block; width:6px; height:6px; border-radius:50%;
+            background:var(--red); margin-right:6px;
+            animation:dot-pulse 1s ease-in-out infinite; vertical-align:middle;
+        }
+        @keyframes dot-pulse { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+
+        /* BOOT */
+        #screen-boot { display: block; }
+
+        .boot-line {
+            font-size:11px; letter-spacing:0.1em; color:var(--dim); line-height:2.4;
+            opacity:0; transform:translateX(-6px);
+            transition:opacity 0.25s, transform 0.25s;
+        }
+        .boot-line.show { opacity:1; transform:none; }
+        .boot-line .hi   { color:var(--red); }
+        .boot-line .ok   { color:var(--green); }
+        .boot-line .warn { color:#c8960c; }
+
+        .cursor-blink {
+            display:inline-block; width:8px; height:14px;
+            background:var(--red); vertical-align:middle;
+            animation:blink 0.9s step-end infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+        /* QUESTION */
+        #screen-question { display: none; }
+
+        .q-meta { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+
+        .q-prog { display:flex; gap:6px; align-items:center; }
+        .q-seg {
+            width:36px; height:3px;
+            background:rgba(255,255,255,0.06);
+            transition:background 0.3s;
+        }
+        .q-seg.done    { background:var(--green); }
+        .q-seg.current { background:var(--red); animation:seg-pulse 0.7s ease-in-out infinite; }
+        @keyframes seg-pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+        .q-prog-lbl { font-size:9px; letter-spacing:0.2em; color:var(--dim); margin-left:10px; }
+
+        .q-timer { display:flex; align-items:center; gap:8px; }
+        .q-timer-track { width:90px; height:2px; background:rgba(204,17,17,0.15); overflow:hidden; }
+        .q-timer-fill  { height:100%; background:var(--red); width:100%; transition:width 1s linear; }
+        .q-timer-num   { font-family:var(--font-d); font-size:22px; color:var(--red); min-width:30px; text-align:right; }
+        .q-timer-num.urgent { color:var(--red2); animation:urgent-flash 0.25s step-end infinite; }
+        @keyframes urgent-flash { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+        .q-tag  { font-size:8px; letter-spacing:0.3em; color:var(--dim); margin-bottom:10px; }
+        .q-text {
+            font-size:16px; letter-spacing:0.04em; color:var(--text); line-height:1.65;
+            border-left:2px solid var(--red); padding-left:14px; margin-bottom:26px;
+        }
+
+        .q-choices { display:flex; flex-direction:column; gap:8px; }
+        .q-choice {
+            display:flex; align-items:center; gap:14px;
+            padding:13px 16px;
+            border:1px solid rgba(255,255,255,0.05);
+            background:rgba(255,255,255,0.015);
+            cursor:pointer; font-size:12px; letter-spacing:0.08em;
+            transition:border-color 0.15s, background 0.15s, color 0.15s;
+        }
+        .q-choice:hover:not(.disabled) {
+            border-color:rgba(204,17,17,0.5);
+            background:rgba(204,17,17,0.06);
+            color:var(--red);
+        }
+        .q-choice .ck {
+            font-family:var(--font-d); font-size:18px;
+            color:rgba(204,17,17,0.5); min-width:20px; flex-shrink:0;
+        }
+        .q-choice.correct { border-color:var(--green); background:rgba(0,204,85,0.07); color:var(--green); pointer-events:none; }
+        .q-choice.wrong   { border-color:var(--red);   background:rgba(204,17,17,0.1); color:var(--red);   pointer-events:none; }
+        .q-choice.disabled { pointer-events:none; opacity:0.35; }
+
+        .q-feedback { margin-top:14px; font-size:9px; letter-spacing:0.2em; color:var(--green); min-height:18px; }
+        .q-feedback.err { color:var(--red); }
+
+        /* SUCCESS */
+        #screen-success { display:none; text-align:center; }
+
+        .success-big {
+            font-family:var(--font-d); font-size:72px; letter-spacing:0.08em;
+            color:var(--green); line-height:0.95; margin-bottom:24px;
+            animation:success-glow 1.8s ease-in-out infinite;
+        }
+        @keyframes success-glow {
+            0%,100% { text-shadow:0 0 30px rgba(0,204,85,0.35); }
+            50%     { text-shadow:0 0 60px rgba(0,204,85,0.75), 0 0 100px rgba(0,204,85,0.2); }
+        }
+        .success-log { font-size:10px; letter-spacing:0.18em; color:var(--dim); line-height:2.6; }
+        .success-log .ok { color:var(--green); }
+
+        .redirect-bar-wrap { width:260px; height:2px; background:rgba(0,204,85,0.1); margin:22px auto 0; }
+        .redirect-bar { height:100%; background:var(--green); width:0%; transition:width 3.5s linear; }
+
+        /* DENIED */
+        #screen-denied { display:none; text-align:center; }
+
+        .denied-big {
+            font-family:var(--font-d); font-size:68px; letter-spacing:0.08em;
+            color:var(--red); line-height:0.92; margin-bottom:10px;
+        }
+        .denied-big.shake { animation:denied-shake 0.08s linear infinite; }
+        @keyframes denied-shake {
+            0%,100% { transform:translateX(0); }
+            25%     { transform:translateX(-3px) skewX(-1deg); }
+            75%     { transform:translateX(3px)  skewX(1deg); }
+        }
+        .denied-sub { font-size:9px; letter-spacing:0.3em; color:rgba(204,17,17,0.6); margin-bottom:28px; }
+
+        .denied-log {
+            font-size:10px; letter-spacing:0.1em; color:var(--dim); line-height:2.6;
+            text-align:left; max-width:400px; margin:0 auto 28px;
+            border-left:1px solid rgba(204,17,17,0.2); padding-left:16px;
+        }
+        .denied-log .red { color:var(--red); }
+
+        .denied-count {
+            font-family:var(--font-d); font-size:80px; color:var(--red); line-height:1;
+            margin-bottom:16px; text-shadow:0 0 40px rgba(204,17,17,0.5);
+            animation:count-pulse 1s ease-in-out infinite;
+        }
+        @keyframes count-pulse {
+            0%,100% { opacity:1; transform:scale(1); }
+            50%     { opacity:0.25; transform:scale(0.88); }
+        }
+
+        .denied-retry {
+            display:none; margin-top:20px;
+            font-size:9px; letter-spacing:0.25em; color:var(--dim);
+            cursor:pointer; transition:color 0.2s;
+        }
+        .denied-retry:hover { color:var(--text); }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <span class="status-dot"></span>ISL -- TERMINAL CLASSE
+        </div>
+        <div class="top-bar-right" id="top-ref">// REF : ISL-GATE-CLV5</div>
+    </div>
+
+    <!-- BOOT -->
+    <div id="screen-boot">
+        <div class="boot-line" id="bl-0">
+            &gt; Connexion entrante -- <span class="warn">Origine : NON AUTORISEE</span>
+        </div>
+        <div class="boot-line" id="bl-1">
+            &gt; Fichier detecte : <span class="hi">FICHIER_CLV5_LEAK.DAT</span>
+        </div>
+        <div class="boot-line" id="bl-2">
+            &gt; Classification : <span class="hi">NIVEAU 5 -- CRITIQUE -- ISL EYES ONLY</span>
+        </div>
+        <div class="boot-line" id="bl-3">
+            &gt; Acces direct : <span class="hi">BLOQUE</span> -- Protocole d'identification requis
+        </div>
+        <div class="boot-line" id="bl-4">
+            &gt; Instructions : <span class="ok">4 questions</span> -- repondez correctement pour acceder
+        </div>
+        <div class="boot-line" id="bl-5">
+            &gt; <span class="hi">AVERTISSEMENT</span> -- 1 erreur = deconnexion immediate + adresse tracee
+        </div>
+        <div class="boot-line" id="bl-6">
+            &gt; Timer actif : <span class="hi">25 secondes par question</span>
+        </div>
+        <div class="boot-line" id="bl-7">
+            &gt; Initialisation du protocole... <span class="cursor-blink"></span>
+        </div>
+    </div>
+
+    <!-- QUESTION -->
+    <div id="screen-question">
+        <div class="q-meta">
+            <div>
+                <div style="font-size:8px;letter-spacing:0.3em;color:var(--dim);margin-bottom:10px;">
+                    // PROTOCOLE D'IDENTIFICATION -- IRON STREET LEAGUE
+                </div>
+                <div class="q-prog">
+                    <div class="q-seg" id="seg-0"></div>
+                    <div class="q-seg" id="seg-1"></div>
+                    <div class="q-seg" id="seg-2"></div>
+                    <div class="q-seg" id="seg-3"></div>
+                    <span class="q-prog-lbl" id="q-prog-lbl">1 / 4</span>
+                </div>
+            </div>
+            <div class="q-timer">
+                <div class="q-timer-track">
+                    <div class="q-timer-fill" id="q-timer-fill"></div>
+                </div>
+                <div class="q-timer-num" id="q-timer-num">25</div>
+                <div style="font-size:8px;letter-spacing:0.15em;color:var(--dim);">SEC</div>
+            </div>
+        </div>
+
+        <div class="q-tag" id="q-tag"></div>
+        <div class="q-text" id="q-text"></div>
+        <div class="q-choices" id="q-choices"></div>
+        <div class="q-feedback" id="q-feedback"></div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div id="screen-success">
+        <div class="success-big">ACCES<br>ACCORDE</div>
+        <div class="success-log" id="success-log"></div>
+        <div class="redirect-bar-wrap">
+            <div class="redirect-bar" id="redirect-bar"></div>
+        </div>
+    </div>
+
+    <!-- DENIED -->
+    <div id="screen-denied">
+        <div class="denied-big" id="denied-big">ACCES<br>REFUSE</div>
+        <div class="denied-sub">
+            Tentative d'acces non autorisee -- Alerte securite
+        </div>
+        <div class="denied-log" id="denied-log"></div>
+        <div class="denied-count" id="denied-count">5</div>
+        <div class="denied-retry" id="denied-retry">
+            [ REESSAYER -- NOUVELLE TENTATIVE ]
+        </div>
+    </div>
+
+</div>
+
+<script>
+/* ============================================================
+   ISL GATE — Questionnaire d'acces niveau 5
+   Toutes les reponses sont trouvables sur index.html
+============================================================ */
+
+const QUESTIONS = [
+    {
+        q: "Dans l'ISL, un combat se termine :",
+        opts: [
+            "Apres 3 rounds reglementaires",
+            "A la decision des juges apres 5 rounds",
+            "Quand un combattant ne peut plus se battre",
+            "Apres 10 minutes de combat maximum"
+        ],
+        correct: 2
+    },
+    {
+        q: "Le fondateur de l'Iron Street League est connu sous le nom de :",
+        opts: [
+            "THE BUTCHER",
+            "IRON JAW",
+            "THE GHOST",
+            "LE MARTEAU"
+        ],
+        correct: 3
+    },
+    {
+        q: "Combien d'actes sont formellement interdits dans le reglement ISL ?",
+        opts: [
+            "3 actes interdits",
+            "5 actes interdits",
+            "7 actes interdits",
+            "Aucun -- l'ISL ne reconnait aucune regle"
+        ],
+        correct: 2
+    },
+    {
+        q: "Quel est le bilan officiel du champion actuel de l'ISL ?",
+        opts: [
+            "9 victoires -- 1 defaite -- 0 nul",
+            "6 victoires -- 0 defaite -- 1 nul",
+            "7 victoires -- 2 defaites -- 0 nul",
+            "5 victoires -- 3 defaites -- 0 nul"
+        ],
+        correct: 0
+    }
+];
+
+const KEYS = ['A','B','C','D'];
+const TIMER_MAX = 25;
+let currentQ = 0;
+let timerInterval = null;
+let timeLeft = TIMER_MAX;
+
+/* ── AUDIO ───────────────────────────────────────────────── */
+function beep(ok) {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const g   = ctx.createGain();
+        osc.connect(g);
+        g.connect(ctx.destination);
+        if (ok) {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(1100, ctx.currentTime + 0.12);
+            g.gain.setValueAtTime(0.22, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc.start(); osc.stop(ctx.currentTime + 0.45);
+        } else {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(160, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(35, ctx.currentTime + 0.55);
+            g.gain.setValueAtTime(0.3, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+            osc.start(); osc.stop(ctx.currentTime + 0.65);
+        }
+    } catch(e) { /* autoplay bloque, pas grave */ }
+}
+
+/* ── BOOT ───────────────────────────────────────────────── */
+function runBoot() {
+    const delays = [0, 340, 700, 1060, 1450, 1880, 2260, 2680];
+    document.querySelectorAll('.boot-line').forEach(function(l, i) {
+        setTimeout(function() { l.classList.add('show'); }, delays[i] || i * 350);
+    });
+    setTimeout(startQuestions, 3500);
+}
+
+/* ── QUESTIONS ──────────────────────────────────────────── */
+function startQuestions() {
+    document.getElementById('screen-boot').style.display = 'none';
+    document.getElementById('screen-question').style.display = 'block';
+    renderQ(0);
+}
+
+function renderQ(idx) {
+    currentQ = idx;
+    var q = QUESTIONS[idx];
+
+    // Segments de progression
+    for (var i = 0; i < 4; i++) {
+        var seg = document.getElementById('seg-' + i);
+        seg.className = 'q-seg';
+        if (i < idx)   seg.classList.add('done');
+        if (i === idx) seg.classList.add('current');
+    }
+    document.getElementById('q-prog-lbl').textContent = (idx + 1) + ' / 4';
+    document.getElementById('q-tag').textContent = '// QUESTION ' + (idx + 1) + ' / 4 -- FICHIER CLV5';
+    document.getElementById('q-text').textContent = q.q;
+    document.getElementById('q-feedback').textContent = '';
+    document.getElementById('q-feedback').className = 'q-feedback';
+
+    // Construire les choix via DOM (eviter innerHTML)
+    var box = document.getElementById('q-choices');
+    while (box.firstChild) box.removeChild(box.firstChild);
+
+    q.opts.forEach(function(txt, i) {
+        var row = document.createElement('div');
+        row.className = 'q-choice';
+
+        var key = document.createElement('span');
+        key.className = 'ck';
+        key.textContent = KEYS[i];
+
+        var label = document.createElement('span');
+        label.textContent = txt;
+
+        row.appendChild(key);
+        row.appendChild(label);
+        row.addEventListener('click', (function(idx) {
+            return function() { handleAnswer(idx); };
+        })(i));
+        box.appendChild(row);
+    });
+
+    startTimer();
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    timeLeft = TIMER_MAX;
+    var fill = document.getElementById('q-timer-fill');
+    var num  = document.getElementById('q-timer-num');
+    fill.style.transition = 'none';
+    fill.style.width = '100%';
+    num.textContent = TIMER_MAX;
+    num.className   = 'q-timer-num';
+    fill.getBoundingClientRect(); // reflow
+    fill.style.transition = 'width 1s linear';
+
+    timerInterval = setInterval(function() {
+        timeLeft--;
+        num.textContent = timeLeft;
+        fill.style.width = (timeLeft / TIMER_MAX * 100) + '%';
+        if (timeLeft <= 6) num.className = 'q-timer-num urgent';
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            onTimeout();
+        }
+    }, 1000);
+}
+
+function onTimeout() {
+    disableAll();
+    var fb = document.getElementById('q-feedback');
+    fb.className = 'q-feedback err';
+    fb.textContent = '> TEMPS ECOULE -- DELAI D\'IDENTIFICATION DEPASSE';
+    beep(false);
+    setTimeout(showDenied, 1400);
+}
+
+function handleAnswer(idx) {
+    clearInterval(timerInterval);
+    var q = QUESTIONS[currentQ];
+    var choices = document.querySelectorAll('.q-choice');
+    var fb = document.getElementById('q-feedback');
+    disableAll();
+
+    if (idx === q.correct) {
+        choices[idx].classList.add('correct');
+        fb.className = 'q-feedback';
+        fb.textContent = '> REPONSE CORRECTE -- NIVEAU ' + (currentQ + 1) + ' VALIDE';
+        beep(true);
+
+        if (currentQ + 1 >= QUESTIONS.length) {
+            setTimeout(showSuccess, 1100);
+        } else {
+            setTimeout(function() { renderQ(currentQ + 1); }, 1300);
+        }
+    } else {
+        choices[idx].classList.add('wrong');
+        var correct = currentQ; // capture
+        setTimeout(function() {
+            var all = document.querySelectorAll('.q-choice');
+            if (all[QUESTIONS[correct].correct]) {
+                all[QUESTIONS[correct].correct].classList.add('correct');
+            }
+        }, 350);
+        fb.className = 'q-feedback err';
+        fb.textContent = '> REPONSE INCORRECTE -- PROTOCOLE D\'ALERTE ACTIVE';
+        beep(false);
+        setTimeout(showDenied, 1700);
+    }
+}
+
+function disableAll() {
+    document.querySelectorAll('.q-choice').forEach(function(c) {
+        if (!c.classList.contains('correct') && !c.classList.contains('wrong')) {
+            c.classList.add('disabled');
+        }
+    });
+}
+
+/* ── SUCCESS ──────────────────────────────────────────────── */
+function showSuccess() {
+    playWinMusic();
+    document.getElementById('screen-question').style.display = 'none';
+    document.getElementById('screen-success').style.display = 'block';
+    document.getElementById('top-ref').textContent = '// ACCES ACCORDE -- NIVEAU 5';
+
+    var log = document.getElementById('success-log');
+    var lines = [
+        { text: '> IDENTIFICATION REUSSIE -- 4 / 4 CORRECT', ok: true },
+        { text: "> Niveau d'acces accorde : NIVEAU 5 -- CRITIQUE", ok: true },
+        { text: '> Dechiffrement du fichier ISL_CLV5.DAT...',    ok: false },
+        { text: '> Redirection vers le dossier classe...',         ok: false }
+    ];
+    lines.forEach(function(l) {
+        var p = document.createElement('div');
+        p.textContent = l.text;
+        if (l.ok) p.style.color = 'var(--green)';
+        else       p.style.color = 'var(--dim)';
+        p.style.letterSpacing = '0.18em';
+        p.style.fontSize = '10px';
+        p.style.lineHeight = '2.6';
+        log.appendChild(p);
+    });
+
+    setTimeout(function() {
+        document.getElementById('redirect-bar').style.width = '100%';
+    }, 80);
+    setTimeout(function() { window.location.href = 'dossier.html'; }, 3900);
+}
+
+/* ── DENIED ──────────────────────────────────────────────── */
+function showDenied() {
+    playLoserMusic();
+    document.getElementById('screen-question').style.display = 'none';
+    document.getElementById('screen-denied').style.display = 'block';
+    document.getElementById('top-ref').textContent = '// ALERTE SECURITE -- ACCES REVOQUE';
+    document.getElementById('denied-big').classList.add('shake');
+    document.body.classList.add('alert-flash');
+    setTimeout(function() { document.body.classList.remove('alert-flash'); }, 1000);
+
+    // Construire le log d'erreur via DOM
+    var log = document.getElementById('denied-log');
+    var logLines = [
+        { text: '> Reponse incorrecte enregistree', red: false },
+        { text: '> Identite : TRACEE ET LOGGEE', red: true },
+        { text: '> Fichier ISL_CLV5.DAT : AUTO-DESTRUCTION ACTIVEE', red: true },
+        { text: '> Acces definitvement revoque pour cette session', red: false },
+        { text: '> Deconnexion forcee dans :', red: false }
+    ];
+    logLines.forEach(function(l) {
+        var p = document.createElement('div');
+        p.textContent = l.text;
+        p.style.color = l.red ? 'var(--red)' : 'var(--dim)';
+        log.appendChild(p);
+    });
+
+    var count = 5;
+    var cdEl = document.getElementById('denied-count');
+    cdEl.textContent = count;
+
+    var cd = setInterval(function() {
+        count--;
+        cdEl.textContent = count;
+        if (count <= 0) {
+            clearInterval(cd);
+            window.location.href = 'index.html';
+        }
+    }, 1000);
+
+    setTimeout(function() {
+        var retry = document.getElementById('denied-retry');
+        retry.style.display = 'block';
+        retry.addEventListener('click', function() { location.reload(); });
+    }, 6200);
+}
+
+/* ── INIT ──────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', runBoot);
+
+/* ================================================================
+   GATE AUDIO ENGINE
+   1. ambiance mystérieuse (fond)
+   2. musique de victoire (4/4 correct)
+   3. musique de looser (erreur / timeout)
+================================================================ */
+var gateCtx = null;
+var gateMaster = null;
+
+function getAudioCtx() {
+    if (!gateCtx) {
+        gateCtx = new (window.AudioContext || window.webkitAudioContext)();
+        gateMaster = gateCtx.createGain();
+        gateMaster.gain.value = 0;
+        gateMaster.connect(gateCtx.destination);
+    }
+    if (gateCtx.state === 'suspended') gateCtx.resume();
+    return gateCtx;
+}
+
+/* ── 1. AMBIANCE MYSTÉRIEUSE ────────────────────────────── */
+function startAmbiance() {
+    var ctx = getAudioCtx();
+    var t = ctx.currentTime;
+
+    // Fade in progressif
+    gateMaster.gain.setValueAtTime(0, t);
+    gateMaster.gain.linearRampToValueAtTime(0.45, t + 3.5);
+
+    // Drone grave : 2 sines désaccordées (55Hz + 55.9Hz)
+    var droneG = ctx.createGain();
+    droneG.gain.value = 0.32;
+    [55, 55.9].forEach(function(f) {
+        var o = ctx.createOscillator();
+        o.type = 'sine'; o.frequency.value = f;
+        o.connect(droneG); o.start();
+    });
+    droneG.connect(gateMaster);
+
+    // LFO lent sur drone → respiration (0.1 Hz)
+    var breathLFO = ctx.createOscillator();
+    breathLFO.type = 'sine'; breathLFO.frequency.value = 0.10;
+    var breathG = ctx.createGain(); breathG.gain.value = 0.14;
+    breathLFO.connect(breathG); breathG.connect(droneG.gain);
+    breathLFO.start();
+
+    // Ton haut perturbant (680Hz, très doux, oscillant)
+    var hiOsc = ctx.createOscillator();
+    hiOsc.type = 'sine'; hiOsc.frequency.value = 680;
+    var hiG = ctx.createGain(); hiG.gain.value = 0.012;
+    var hiLFO = ctx.createOscillator();
+    hiLFO.type = 'sine'; hiLFO.frequency.value = 0.35;
+    var hiLFOG = ctx.createGain(); hiLFOG.gain.value = 28;
+    hiLFO.connect(hiLFOG); hiLFOG.connect(hiOsc.frequency);
+    hiOsc.connect(hiG); hiG.connect(gateMaster);
+    hiOsc.start(); hiLFO.start();
+
+    // Bruit filtré grave (texture souterraine)
+    var bLen = ctx.sampleRate * 3;
+    var bBuf = ctx.createBuffer(1, bLen, ctx.sampleRate);
+    var bd = bBuf.getChannelData(0);
+    for (var i = 0; i < bLen; i++) bd[i] = Math.random() * 2 - 1;
+    var noise = ctx.createBufferSource();
+    noise.buffer = bBuf; noise.loop = true;
+    var nLP = ctx.createBiquadFilter();
+    nLP.type = 'lowpass'; nLP.frequency.value = 140; nLP.Q.value = 0.6;
+    var nG = ctx.createGain(); nG.gain.value = 0.06;
+    noise.connect(nLP); nLP.connect(nG); nG.connect(gateMaster);
+    noise.start();
+
+    // Pings métalliques périodiques
+    function ping() {
+        var c = ctx;
+        if (!c || c.state === 'closed') return;
+        var pt = c.currentTime;
+        var po = c.createOscillator();
+        po.type = 'sine';
+        po.frequency.setValueAtTime(1100 + Math.random() * 600, pt);
+        po.frequency.exponentialRampToValueAtTime(300, pt + 0.7);
+        var pg = c.createGain();
+        pg.gain.setValueAtTime(0.055, pt);
+        pg.gain.exponentialRampToValueAtTime(0.001, pt + 0.9);
+        po.connect(pg); pg.connect(gateMaster);
+        po.start(pt); po.stop(pt + 1.0);
+        setTimeout(ping, 3500 + Math.random() * 5000);
+    }
+    setTimeout(ping, 1200);
+}
+
+function fadeOutAmbiance(duration) {
+    if (!gateMaster || !gateCtx) return;
+    var t = gateCtx.currentTime;
+    gateMaster.gain.cancelScheduledValues(t);
+    gateMaster.gain.linearRampToValueAtTime(0, t + (duration || 1.2));
+}
+
+/* ── 2. MUSIQUE DE VICTOIRE ─────────────────────────────── */
+function playWinMusic() {
+    fadeOutAmbiance(0.6);
+    setTimeout(function() {
+        var ctx = getAudioCtx();
+        var master = ctx.createGain();
+        master.gain.value = 0.55;
+        master.connect(ctx.destination);
+
+        // Fanfare ascendante : Do Mi Sol Do (accord de victoire)
+        // Notes en Hz : C5=523, E5=659, G5=784, C6=1047
+        var fanfare = [
+            { f: 523,  t: 0.0,  d: 0.22 },
+            { f: 659,  t: 0.2,  d: 0.22 },
+            { f: 784,  t: 0.4,  d: 0.22 },
+            { f: 1047, t: 0.62, d: 0.9  },
+        ];
+        fanfare.forEach(function(n) {
+            var st = ctx.currentTime + n.t;
+
+            // Corps de la note (sawtooth = cuivre brillant)
+            var osc = ctx.createOscillator();
+            osc.type = 'sawtooth'; osc.frequency.value = n.f;
+
+            // LFO vibrato léger
+            var vib = ctx.createOscillator();
+            vib.type = 'sine'; vib.frequency.value = 6;
+            var vibG = ctx.createGain(); vibG.gain.value = n.t > 0.5 ? 8 : 3;
+            vib.connect(vibG); vibG.connect(osc.frequency);
+
+            // Enveloppe
+            var g = ctx.createGain();
+            g.gain.setValueAtTime(0, st);
+            g.gain.linearRampToValueAtTime(0.5, st + 0.025);
+            g.gain.exponentialRampToValueAtTime(0.3, st + 0.08);
+            g.gain.exponentialRampToValueAtTime(0.001, st + n.d);
+
+            // Filtre passe-bas (adoucit le sawtooth)
+            var lpf = ctx.createBiquadFilter();
+            lpf.type = 'lowpass'; lpf.frequency.value = 2200;
+
+            osc.connect(lpf); lpf.connect(g); g.connect(master);
+            vib.start(st); osc.start(st);
+            vib.stop(st + n.d + 0.05); osc.stop(st + n.d + 0.05);
+        });
+
+        // Accord final tenu (C majeur)
+        var chordNotes = [523, 659, 784];
+        var chordT = ctx.currentTime + 0.62;
+        chordNotes.forEach(function(f) {
+            var o = ctx.createOscillator();
+            o.type = 'sine'; o.frequency.value = f;
+            var g = ctx.createGain();
+            g.gain.setValueAtTime(0.12, chordT);
+            g.gain.linearRampToValueAtTime(0.18, chordT + 0.1);
+            g.gain.exponentialRampToValueAtTime(0.001, chordT + 1.5);
+            o.connect(g); g.connect(master);
+            o.start(chordT); o.stop(chordT + 1.6);
+        });
+    }, 500);
+}
+
+/* ── 3. MUSIQUE DE LOOSER ───────────────────────────────── */
+function playLoserMusic() {
+    fadeOutAmbiance(0.3);
+    setTimeout(function() {
+        var ctx = getAudioCtx();
+
+        // Trombone triste : Bb4→Ab4→G4→F#4 descendant avec slide final
+        // Bb4=466, Ab4=415, G4=392, F#4=370
+        var notes = [
+            { f: 466, d: 0.38 },
+            { f: 415, d: 0.38 },
+            { f: 392, d: 0.38 },
+            { f: 370, d: 1.4  },  // dernière note longue + slide bas
+        ];
+
+        var cursor = ctx.currentTime + 0.15;
+        notes.forEach(function(n, idx) {
+            var st = cursor;
+            var isLast = idx === notes.length - 1;
+
+            var osc = ctx.createOscillator();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(n.f, st);
+            if (isLast) {
+                // Slide vers le bas (waaah)
+                osc.frequency.linearRampToValueAtTime(n.f * 0.72, st + n.d * 0.9);
+            }
+
+            // Vibrato (trombone)
+            var vib = ctx.createOscillator();
+            vib.type = 'sine'; vib.frequency.value = isLast ? 5 : 4;
+            var vibG = ctx.createGain(); vibG.gain.value = isLast ? 10 : 5;
+            vib.connect(vibG); vibG.connect(osc.frequency);
+
+            // Filtre cuivre
+            var lpf = ctx.createBiquadFilter();
+            lpf.type = 'lowpass'; lpf.frequency.value = 900; lpf.Q.value = 1.5;
+
+            // Enveloppe
+            var g = ctx.createGain();
+            g.gain.setValueAtTime(0, st);
+            g.gain.linearRampToValueAtTime(0.45, st + 0.03);
+            g.gain.setValueAtTime(0.4, st + n.d * 0.7);
+            g.gain.exponentialRampToValueAtTime(0.001, st + n.d);
+
+            osc.connect(lpf); lpf.connect(g); g.connect(ctx.destination);
+            vib.start(st); osc.start(st);
+            vib.stop(st + n.d + 0.1); osc.stop(st + n.d + 0.1);
+
+            cursor += n.d * 0.82;  // légère superposition
+        });
+    }, 150);
+}
+
+/* ── AUTO-DÉMARRAGE AMBIANCE ─────────────────────────────── */
+// Le user arrive ici via un clic → AudioContext débloqué d'office
+window.addEventListener('DOMContentLoaded', function() {
+    try { startAmbiance(); } catch(e) {
+        // Si quand même bloqué, démarrer au premier geste
+        function unlock() {
+            document.removeEventListener('click',     unlock);
+            document.removeEventListener('mousemove', unlock);
+            startAmbiance();
+        }
+        document.addEventListener('click',     unlock, { once: true });
+        document.addEventListener('mousemove', unlock, { once: true });
+    }
+});
+</script>
+</body>
+</html>
