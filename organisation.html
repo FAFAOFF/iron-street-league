@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISL — DOSSIER ORGANISATION — CLASSIFIÉ NIVEAU 5</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:      #020202;
+            --bg2:     #060606;
+            --bg3:     #0d0d0d;
+            --surface: #111;
+            --border:  #1a1a1a;
+            --red:     #cc1111;
+            --red-hot: #ff2222;
+            --gold:    #c8960c;
+            --green:   #00ff41;
+            --blue:    #0033ff;
+            --text:    #e8e4df;
+            --text-2:  #9a9290;
+            --text-3:  #3a3a3a;
+            --font-d:  'Bebas Neue', sans-serif;
+            --font-b:  'Barlow Condensed', sans-serif;
+            --font-m:  'IBM Plex Mono', monospace;
+        }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+
+        body {
+            background:var(--bg); color:var(--text);
+            font-family:var(--font-m); font-size:13px;
+            overflow-x:hidden; cursor:crosshair;
+        }
+
+        /* ─── SCANLINES ─── */
+        body::before {
+            content:''; position:fixed; inset:0; z-index:9990;
+            background:repeating-linear-gradient(0deg,
+                transparent, transparent 2px,
+                rgba(0,0,0,0.09) 2px, rgba(0,0,0,0.09) 4px);
+            pointer-events:none;
+        }
+
+        /* ─── VIGNETTE RESPIRANTE ─── */
+        body::after {
+            content:''; position:fixed; inset:0; z-index:9989;
+            background:radial-gradient(ellipse 80% 80% at 50% 50%,
+                transparent 40%, rgba(0,0,0,0.65) 100%);
+            pointer-events:none;
+            animation:breathe 6s ease-in-out infinite;
+        }
+        @keyframes breathe {
+            0%,100% { opacity:0.8; }
+            50%      { opacity:0.5; }
+        }
+
+        /* ─── LECTURE PROGRESS ─── */
+        #read-progress {
+            position:fixed; top:0; left:0; height:2px;
+            background:var(--red);
+            box-shadow:0 0 10px var(--red), 0 0 20px rgba(204,17,17,0.4);
+            z-index:9999; width:0%;
+            transition:width 0.15s linear;
+        }
+
+        /* ─── PAGE GLITCH ─── */
+        @keyframes pg-shift {
+            0%   { clip-path:inset(0 0 100% 0); transform:translateX(0); }
+            10%  { clip-path:inset(10% 0 70% 0); transform:translateX(-6px); filter:hue-rotate(90deg); }
+            20%  { clip-path:inset(50% 0 20% 0); transform:translateX(4px); }
+            30%  { clip-path:inset(30% 0 50% 0); transform:translateX(-3px); filter:hue-rotate(-80deg); }
+            40%  { clip-path:inset(70% 0 5% 0);  transform:translateX(6px); }
+            100% { clip-path:inset(0 0 100% 0); transform:translateX(0); filter:none; }
+        }
+        .page-glitch-layer {
+            position:fixed; inset:0; z-index:9997;
+            pointer-events:none; opacity:0;
+            background:rgba(204,17,17,0.04);
+        }
+        .page-glitch-layer.active {
+            opacity:1;
+            animation:pg-shift 0.18s steps(1) forwards;
+        }
+
+        /* ─── BOOT ─── */
+        #boot-screen {
+            position:fixed; inset:0; z-index:10000;
+            background:var(--bg);
+            display:flex; flex-direction:column;
+            justify-content:center; align-items:center;
+            gap:0;
+        }
+        .boot-block {
+            width:660px; max-width:92vw;
+        }
+        .boot-line {
+            font-family:var(--font-m); font-size:12px;
+            letter-spacing:0.1em; line-height:2.2;
+            opacity:0; transition:opacity 0.1s;
+        }
+        .boot-line.show { opacity:1; }
+        .boot-line.green { color:var(--green); }
+        .boot-line.red   { color:var(--red); font-weight:500; }
+        .boot-line.gold  { color:var(--gold); }
+        .boot-line.dim   { color:var(--text-3); }
+        .boot-line.warn  {
+            color:var(--red); border-left:3px solid var(--red);
+            padding-left:14px; letter-spacing:0.15em;
+        }
+        .boot-cursor {
+            display:inline-block; width:8px; height:12px;
+            background:var(--green); animation:blink .6s step-end infinite;
+            vertical-align:middle; margin-left:4px;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+        .boot-bar-wrap {
+            width:660px; max-width:92vw; margin-top:28px;
+            height:2px; background:var(--bg3);
+            opacity:0; transition:opacity 0.3s;
+        }
+        .boot-bar-wrap.show { opacity:1; }
+        .boot-bar-fill {
+            height:100%; background:var(--red); width:0%;
+            box-shadow:0 0 8px var(--red);
+            transition:width 2.2s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        #boot-enter {
+            display:none; margin-top:40px;
+            font-family:var(--font-d); font-size:22px;
+            letter-spacing:0.4em; color:var(--red);
+            background:none; border:1px solid var(--red);
+            padding:14px 48px; cursor:pointer;
+            transition:all .2s;
+            box-shadow:0 0 20px rgba(204,17,17,0.15);
+            position:relative; overflow:hidden;
+        }
+        #boot-enter::before {
+            content:''; position:absolute; inset:0;
+            background:rgba(204,17,17,0.06);
+            transform:translateX(-100%); transition:transform 0.3s;
+        }
+        #boot-enter:hover { box-shadow:0 0 35px rgba(204,17,17,0.35); }
+        #boot-enter:hover::before { transform:translateX(0); }
+
+        /* ─── TOPBAR ─── */
+        .topbar {
+            position:fixed; top:0; left:0; right:0; z-index:500;
+            height:52px; background:rgba(2,2,2,0.96);
+            border-bottom:1px solid rgba(204,17,17,0.4);
+            display:flex; align-items:center; justify-content:space-between;
+            padding:0 32px; backdrop-filter:blur(8px);
+        }
+        .topbar-left {
+            display:flex; align-items:center; gap:20px;
+            font-size:10px; letter-spacing:0.2em; color:var(--text-3);
+        }
+        .topbar-left a { color:var(--text-3); text-decoration:none; transition:color .15s; }
+        .topbar-left a:hover { color:var(--text); }
+        .topbar-id { font-size:10px; letter-spacing:0.25em; color:var(--red); }
+        .topbar-right {
+            display:flex; align-items:center; gap:16px;
+            font-size:10px; letter-spacing:0.2em; color:var(--text-3);
+        }
+        .status-dot {
+            width:6px; height:6px; background:var(--red);
+            border-radius:50%; animation:pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.6)} }
+
+        /* ─── MUSIC BAR ─── */
+        #music-bar {
+            position:fixed; bottom:0; left:0; right:0; z-index:500;
+            height:44px; background:rgba(2,2,2,0.97);
+            border-top:1px solid var(--border);
+            display:flex; align-items:center; justify-content:space-between;
+            padding:0 28px; backdrop-filter:blur(10px);
+            transform:translateY(100%); transition:transform 0.5s ease;
+        }
+        #music-bar.visible { transform:translateY(0); }
+        .music-left { display:flex; align-items:center; gap:14px; }
+        .music-dot {
+            width:6px; height:6px; border-radius:50%;
+            background:var(--red); animation:pulse-dot 2.5s infinite;
+        }
+        .music-label { font-size:9px; letter-spacing:0.25em; color:var(--text-3); }
+        .music-label span { color:var(--text-2); }
+        .music-btn {
+            background:none; border:1px solid var(--border);
+            color:var(--text-3); font-family:var(--font-m);
+            font-size:9px; letter-spacing:0.2em;
+            padding:5px 14px; cursor:pointer; transition:all .15s;
+        }
+        .music-btn:hover  { border-color:var(--red); color:var(--red); }
+        .music-btn.active { border-color:var(--red); color:var(--red); background:rgba(204,17,17,0.05); }
+        .music-vol { display:flex; align-items:center; gap:10px; }
+        .vol-label { font-size:9px; letter-spacing:0.2em; color:var(--text-3); }
+        input[type=range].vol-slider {
+            -webkit-appearance:none; width:80px; height:2px;
+            background:var(--border); outline:none; cursor:pointer;
+        }
+        input[type=range].vol-slider::-webkit-slider-thumb {
+            -webkit-appearance:none; width:10px; height:10px;
+            background:var(--red); border-radius:50%;
+        }
+
+        /* ─── MAIN ─── */
+        #main { display:none; padding-bottom:60px; }
+
+        /* ─── HERO ─── */
+        .hero-org {
+            min-height:100vh;
+            display:flex; flex-direction:column;
+            justify-content:center; align-items:center; text-align:center;
+            padding:80px 40px 60px; position:relative;
+            border-bottom:1px solid var(--border);
+            overflow:hidden;
+        }
+        .hero-bg-noise {
+            position:absolute; inset:0; opacity:0.03;
+            background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size:200px;
+            animation:noise-drift 8s steps(1) infinite;
+        }
+        @keyframes noise-drift {
+            0%,100%{background-position:0 0} 25%{background-position:-50px 20px}
+            50%{background-position:30px -30px} 75%{background-position:-20px 40px}
+        }
+        .hero-org::before {
+            content:''; position:absolute; inset:0;
+            background:radial-gradient(ellipse 50% 50% at 50% 50%,
+                rgba(204,17,17,0.05) 0%, transparent 70%);
+        }
+        .hero-org::after {
+            content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+            background:linear-gradient(90deg, transparent, var(--red), transparent);
+        }
+        .hero-badge {
+            display:inline-flex; align-items:center; gap:16px;
+            border:1px solid var(--red); background:rgba(204,17,17,0.04);
+            padding:8px 28px; font-size:9px; letter-spacing:0.4em;
+            color:var(--red); margin-bottom:56px; position:relative; z-index:1;
+        }
+        .hero-badge::before, .hero-badge::after {
+            content:''; position:absolute;
+            width:8px; height:8px; background:var(--red);
+        }
+        .hero-badge::before { top:-1px; left:-1px; }
+        .hero-badge::after  { bottom:-1px; right:-1px; }
+        .hero-ref {
+            font-size:10px; letter-spacing:0.35em; color:var(--text-3);
+            margin-bottom:20px; position:relative; z-index:1;
+        }
+        .hero-title {
+            font-family:var(--font-d);
+            font-size:clamp(52px,9vw,108px);
+            letter-spacing:0.06em; line-height:0.88;
+            margin-bottom:28px; position:relative; z-index:1;
+        }
+        .hero-title .accent { color:var(--red); }
+
+        /* GLITCH sur le titre */
+        .glitch-wrap {
+            position:relative; display:inline-block;
+        }
+        .glitch-wrap::before, .glitch-wrap::after {
+            content:attr(data-text);
+            position:absolute; top:0; left:0;
+            font-family:inherit; font-size:inherit;
+            letter-spacing:inherit; line-height:inherit;
+            pointer-events:none;
+        }
+        .glitch-wrap::before {
+            color:var(--red-hot); opacity:0;
+            animation:glitch-a 9s infinite;
+        }
+        .glitch-wrap::after {
+            color:#0044ff; opacity:0;
+            animation:glitch-b 9s infinite;
+        }
+        @keyframes glitch-a {
+            0%,80%,100%{ opacity:0; transform:none; clip-path:none; }
+            82%{ opacity:0.85; transform:translateX(-4px) skewX(-1deg); clip-path:inset(15% 0 65% 0); }
+            84%{ clip-path:inset(55% 0 15% 0); transform:translateX(-2px); }
+            86%{ opacity:0; }
+        }
+        @keyframes glitch-b {
+            0%,80%,100%{ opacity:0; transform:none; clip-path:none; }
+            82%{ opacity:0.5; transform:translateX(4px); clip-path:inset(35% 0 40% 0); }
+            85%{ opacity:0; }
+        }
+
+        .hero-sub {
+            font-size:12px; letter-spacing:0.3em; color:var(--text-3);
+            margin-bottom:48px; position:relative; z-index:1;
+        }
+        .hero-divider {
+            width:160px; height:1px;
+            background:linear-gradient(90deg, transparent, var(--red), transparent);
+            margin:0 auto 40px; position:relative; z-index:1;
+        }
+        .hero-facts {
+            display:flex; gap:0; border:1px solid var(--border);
+            position:relative; z-index:1;
+            overflow:hidden;
+        }
+        .hero-fact {
+            padding:18px 32px; border-right:1px solid var(--border);
+            text-align:left;
+        }
+        .hero-fact:last-child { border-right:none; }
+        .hero-fact-label { font-size:8px; letter-spacing:0.3em; color:var(--text-3); margin-bottom:6px; }
+        .hero-fact-value { font-family:var(--font-d); font-size:17px; letter-spacing:0.1em; color:var(--text); }
+        .hero-fact-value.red { color:var(--red); }
+        .scroll-hint {
+            position:absolute; bottom:32px; left:50%; transform:translateX(-50%);
+            font-size:9px; letter-spacing:0.3em; color:var(--text-3);
+            animation:hint-fade 3s ease-in-out infinite;
+            z-index:1;
+        }
+        @keyframes hint-fade { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
+
+        /* ─── SECTIONS ─── */
+        .org-section {
+            padding:100px 0; border-bottom:1px solid var(--border);
+            opacity:0; transform:translateY(30px);
+            transition:opacity 0.9s ease, transform 0.9s ease;
+            position:relative;
+        }
+        .org-section.visible {
+            opacity:1; transform:translateY(0);
+        }
+        .container {
+            max-width:1060px; margin:0 auto; padding:0 48px;
+        }
+        .section-tag {
+            font-size:9px; letter-spacing:0.35em; color:var(--red);
+            margin-bottom:16px;
+        }
+        .section-num {
+            font-family:var(--font-d); font-size:13px;
+            letter-spacing:0.3em; color:var(--text-3);
+            margin-bottom:8px;
+        }
+        .section-title {
+            font-family:var(--font-d);
+            font-size:clamp(38px,5vw,64px);
+            letter-spacing:0.06em; line-height:1;
+            margin-bottom:12px;
+        }
+        .section-title .accent { color:var(--red); }
+        .section-sub {
+            font-size:10px; letter-spacing:0.25em; color:var(--text-3);
+            margin-bottom:52px; padding-bottom:28px;
+            border-bottom:1px solid var(--border);
+        }
+
+        /* ─── TWO COL LAYOUT ─── */
+        .two-col {
+            display:grid; grid-template-columns:1fr 380px; gap:60px;
+            align-items:start;
+        }
+        @media(max-width:900px){ .two-col{ grid-template-columns:1fr; } }
+
+        /* ─── BODY TEXT ─── */
+        .body-text {
+            font-family:var(--font-b); font-size:17px;
+            font-weight:300; line-height:1.85;
+            color:var(--text-2); letter-spacing:0.02em;
+        }
+        .body-text p { margin-bottom:24px; }
+        .body-text p:last-child { margin-bottom:0; }
+        .body-text strong { color:var(--text); font-weight:600; }
+        .body-text .highlight {
+            color:var(--red); font-weight:600; letter-spacing:0.04em;
+        }
+        .body-text em {
+            font-style:italic; color:var(--text-3); font-size:15px;
+        }
+
+        /* ─── PHOTO PLACEHOLDER ─── */
+        .photo-classified {
+            position:relative; overflow:hidden;
+            border:1px solid var(--border);
+            background:var(--bg2);
+        }
+        .photo-classified canvas {
+            display:block; width:100%; height:280px;
+        }
+        .photo-classified-overlay {
+            position:absolute; inset:0;
+            display:flex; flex-direction:column;
+            justify-content:flex-end; padding:20px;
+            background:linear-gradient(transparent 30%, rgba(0,0,0,0.9) 100%);
+        }
+        .photo-cls-tag {
+            font-size:8px; letter-spacing:0.35em; color:var(--red);
+            margin-bottom:6px;
+        }
+        .photo-cls-title {
+            font-family:var(--font-d); font-size:18px;
+            letter-spacing:0.1em; color:var(--text);
+            margin-bottom:4px;
+        }
+        .photo-cls-ref {
+            font-size:9px; letter-spacing:0.2em; color:var(--text-3);
+        }
+        .photo-classified-border {
+            position:absolute; inset:0; pointer-events:none;
+        }
+        .photo-classified-border::before, .photo-classified-border::after {
+            content:''; position:absolute;
+            width:16px; height:16px; border-color:var(--red); border-style:solid;
+        }
+        .photo-classified-border::before {
+            top:8px; left:8px;
+            border-width:1px 0 0 1px;
+        }
+        .photo-classified-border::after {
+            bottom:8px; right:8px;
+            border-width:0 1px 1px 0;
+        }
+
+        /* ─── BLOCKS ─── */
+        .cls-block {
+            background:var(--bg2); border:1px solid var(--border);
+            border-left:3px solid var(--red);
+            padding:24px 28px; margin-bottom:20px;
+        }
+        .cls-block-gold {
+            background:var(--bg2); border:1px solid rgba(200,150,12,0.25);
+            border-left:3px solid var(--gold);
+            padding:28px 32px; margin-bottom:20px;
+        }
+        .block-tag {
+            font-size:8px; letter-spacing:0.35em;
+            color:var(--red); margin-bottom:14px;
+        }
+        .block-tag-gold { color:var(--gold); }
+        .block-text {
+            font-family:var(--font-b); font-size:15px;
+            font-weight:300; line-height:1.8;
+            color:var(--text-2);
+        }
+        .block-list {
+            list-style:none; padding:0;
+        }
+        .block-list li {
+            font-family:var(--font-b); font-size:14px;
+            font-weight:300; line-height:2;
+            color:var(--text-2); padding-left:18px; position:relative;
+        }
+        .block-list li::before {
+            content:'—'; position:absolute; left:0;
+            color:var(--red); font-size:12px;
+        }
+
+        /* ─── REDACTED ─── */
+        .redacted {
+            background:var(--text-3); color:transparent;
+            user-select:none; letter-spacing:0.05em;
+            border-radius:1px;
+        }
+        .redacted-line {
+            display:inline-block;
+            background:var(--text-3); height:12px;
+            width:180px; border-radius:1px;
+            vertical-align:middle;
+        }
+
+        /* ─── STRUCTURE LEVELS ─── */
+        .levels-grid {
+            display:grid; grid-template-columns:1fr 1fr; gap:2px;
+            background:var(--border); border:1px solid var(--border);
+            margin-bottom:32px;
+        }
+        @media(max-width:700px){ .levels-grid{ grid-template-columns:1fr; } }
+        .level-card {
+            background:var(--bg2); padding:32px 28px;
+            border-left:3px solid transparent;
+            transition:border-color 0.3s, background 0.3s;
+        }
+        .level-card:hover { background:var(--bg3); }
+        .level-card.lvl1 { border-color:var(--text-3); }
+        .level-card.lvl2 { border-color:var(--text-3); }
+        .level-card.lvl3 { border-color:var(--red); }
+        .level-card.lvl4 { border-color:var(--gold); }
+        .level-num {
+            font-size:8px; letter-spacing:0.4em; color:var(--text-3);
+            margin-bottom:8px;
+        }
+        .level-title {
+            font-family:var(--font-d); font-size:26px;
+            letter-spacing:0.06em; margin-bottom:16px;
+        }
+        .level-card.lvl3 .level-title { color:var(--red); }
+        .level-card.lvl4 .level-title { color:var(--gold); }
+        .level-desc {
+            font-family:var(--font-b); font-size:14px;
+            font-weight:300; line-height:1.75; color:var(--text-2);
+            margin-bottom:18px;
+        }
+        .level-status {
+            font-size:8px; letter-spacing:0.3em; color:var(--text-3);
+            border-top:1px solid var(--border); padding-top:12px;
+        }
+        .level-card.lvl3 .level-status { color:var(--red); }
+        .level-card.lvl4 .level-status { color:var(--gold); }
+
+        /* ─── FINANCEMENT ─── */
+        .fin-grid {
+            display:grid; grid-template-columns:1fr 1fr; gap:16px;
+        }
+        @media(max-width:700px){ .fin-grid{ grid-template-columns:1fr; } }
+        .fin-block {
+            background:var(--bg2); border:1px solid var(--border);
+            padding:28px; position:relative; overflow:hidden;
+        }
+        .fin-block.dark {
+            background:#040404;
+            border-color:rgba(204,17,17,0.2);
+        }
+        .fin-block.dark::before {
+            content:''; position:absolute; inset:0;
+            background:repeating-linear-gradient(
+                45deg, transparent, transparent 6px,
+                rgba(204,17,17,0.015) 6px, rgba(204,17,17,0.015) 12px
+            );
+        }
+        .fin-block-title {
+            font-size:8px; letter-spacing:0.35em;
+            margin-bottom:20px;
+        }
+        .fin-block .fin-block-title { color:var(--text-3); }
+        .fin-block.dark .fin-block-title { color:var(--red); }
+
+        /* ─── DOCTRINE ─── */
+        .doctrine-section {
+            background:var(--bg2);
+            border-top:1px solid var(--border);
+            border-bottom:1px solid var(--border);
+        }
+        .big-quote {
+            border-left:4px solid var(--gold);
+            padding:32px 40px; margin:40px 0;
+            background:rgba(200,150,12,0.03);
+            position:relative;
+        }
+        .big-quote::before {
+            content:'"';
+            position:absolute; top:-10px; left:20px;
+            font-family:var(--font-d); font-size:120px;
+            color:rgba(200,150,12,0.06); line-height:1;
+        }
+        .big-quote-text {
+            font-family:var(--font-d); font-size:clamp(20px,2.8vw,32px);
+            letter-spacing:0.04em; line-height:1.45;
+            color:var(--text); position:relative; z-index:1;
+        }
+        .big-quote-source {
+            font-size:10px; letter-spacing:0.25em; color:var(--text-3);
+            margin-top:16px; font-style:italic;
+        }
+        .small-quote {
+            font-family:var(--font-d); font-size:22px;
+            letter-spacing:0.06em; color:var(--red);
+            border-left:2px solid var(--red);
+            padding:12px 24px; margin:28px 0;
+        }
+        .small-quote-src {
+            font-size:9px; letter-spacing:0.2em;
+            color:var(--text-3); margin-left:26px;
+        }
+
+        /* ─── AUJOURD'HUI STATUS ─── */
+        .status-grid {
+            display:grid; grid-template-columns:repeat(3,1fr); gap:2px;
+            background:var(--border); border:1px solid var(--border);
+            margin-bottom:40px;
+        }
+        @media(max-width:700px){ .status-grid{ grid-template-columns:1fr 1fr; } }
+        .status-item {
+            background:var(--bg2); padding:22px 20px;
+        }
+        .status-item-label {
+            font-size:8px; letter-spacing:0.3em; color:var(--text-3);
+            margin-bottom:8px;
+        }
+        .status-item-value {
+            font-family:var(--font-d); font-size:20px;
+            letter-spacing:0.06em;
+        }
+        .status-item-value.ok    { color:var(--green); }
+        .status-item-value.red   { color:var(--red); }
+        .status-item-value.gold  { color:var(--gold); }
+        .status-item-value.dim   { color:var(--text-3); }
+
+        /* ─── VISION PHASES ─── */
+        .phase-list { display:flex; flex-direction:column; gap:28px; }
+        .phase-item {
+            background:var(--bg2); border:1px solid var(--border);
+            padding:32px; position:relative; overflow:hidden;
+        }
+        .phase-item.locked {
+            border-color:rgba(204,17,17,0.3);
+            background:#030303;
+            cursor:not-allowed;
+        }
+        .phase-item.locked::before {
+            content:''; position:absolute; inset:0;
+            background:repeating-linear-gradient(
+                -45deg, transparent, transparent 4px,
+                rgba(204,17,17,0.02) 4px, rgba(204,17,17,0.02) 8px
+            );
+        }
+        .phase-header {
+            display:flex; justify-content:space-between;
+            align-items:flex-start; margin-bottom:16px; gap:20px;
+        }
+        .phase-num {
+            font-size:8px; letter-spacing:0.4em; color:var(--text-3);
+            margin-bottom:6px;
+        }
+        .phase-title {
+            font-family:var(--font-d); font-size:28px;
+            letter-spacing:0.06em;
+        }
+        .phase-item.locked .phase-title { color:var(--red); opacity:0.5; }
+        .phase-badge {
+            font-size:8px; letter-spacing:0.3em;
+            padding:5px 14px; border:1px solid; white-space:nowrap;
+        }
+        .phase-badge.done    { color:var(--text-3); border-color:var(--text-3); }
+        .phase-badge.ongoing { color:var(--gold); border-color:var(--gold); background:rgba(200,150,12,0.05); }
+        .phase-badge.locked  { color:var(--red); border-color:var(--red); background:rgba(204,17,17,0.05); }
+        .phase-desc {
+            font-family:var(--font-b); font-size:15px;
+            font-weight:300; line-height:1.8; color:var(--text-2);
+            margin-bottom:20px;
+        }
+        .phase-item.locked .phase-desc {
+            font-family:var(--font-m); font-size:12px;
+            color:rgba(204,17,17,0.35); letter-spacing:0.05em;
+            line-height:2;
+        }
+        .phase-bar-wrap {
+            height:2px; background:var(--border); position:relative;
+        }
+        .phase-bar {
+            height:100%; background:var(--text-3);
+            width:0%;
+            transition:width 2s cubic-bezier(0.4,0,0.2,1) 0.5s;
+            box-shadow:0 0 6px currentColor;
+        }
+        .phase-bar.done    { background:var(--text-3); }
+        .phase-bar.ongoing { background:var(--gold); box-shadow:0 0 8px var(--gold); }
+        .phase-bar-pct {
+            position:absolute; right:0; top:-18px;
+            font-size:9px; letter-spacing:0.2em; color:var(--text-3);
+        }
+        .phase-bar-pct.ongoing { color:var(--gold); }
+
+        /* ─── PREAMBLE ─── */
+        .preamble-section {
+            padding:70px 0 80px;
+            border-bottom:1px solid var(--border);
+        }
+        .preamble-box {
+            border:1px solid var(--border);
+            border-left:3px solid var(--text-3);
+            padding:32px 40px;
+            background:var(--bg2);
+            max-width:760px;
+        }
+        .preamble-text {
+            font-family:var(--font-b); font-size:16px;
+            font-weight:300; font-style:italic;
+            line-height:2; color:var(--text-2);
+        }
+        .preamble-author {
+            font-size:9px; letter-spacing:0.3em; color:var(--text-3);
+            margin-top:20px;
+        }
+
+        /* ─── FOOTER ─── */
+        .org-footer {
+            padding:60px 48px; border-top:1px solid var(--border);
+            max-width:1060px; margin:0 auto;
+            display:flex; justify-content:space-between;
+            align-items:center; gap:20px; flex-wrap:wrap;
+        }
+        .footer-ref {
+            font-size:9px; letter-spacing:0.25em; color:var(--text-3);
+        }
+        .footer-links { display:flex; gap:24px; }
+        .footer-links a {
+            font-size:10px; letter-spacing:0.25em; color:var(--text-3);
+            text-decoration:none; transition:color .15s;
+        }
+        .footer-links a:hover { color:var(--text); }
+
+        /* ─── SCRAMBLE TITLE ─── */
+        .scramble-title { display:inline-block; }
+
+        /* ─── QUOTE INLINE ─── */
+        .quote-inline {
+            font-family:var(--font-d); font-size:19px;
+            letter-spacing:0.06em; color:var(--text-3);
+            display:block; margin:28px 0 8px;
+        }
+        .quote-source {
+            font-size:9px; letter-spacing:0.25em; color:var(--text-3);
+        }
+
+        /* ─── HIGHLIGHT BAR ─── */
+        .h-bar {
+            width:40px; height:2px;
+            background:var(--red);
+            box-shadow:0 0 8px var(--red);
+            margin-bottom:36px;
+        }
+
+        /* ─── NOTE DE BAS ─── */
+        .analyst-note {
+            font-family:var(--font-m); font-size:11px;
+            color:var(--text-3); line-height:1.9;
+            border-top:1px solid var(--border);
+            padding-top:24px; margin-top:32px;
+            font-style:italic;
+        }
+        .analyst-note strong { color:var(--text-2); font-style:normal; }
+
+        /* ─── FINAL QUOTE ─── */
+        .final-quote {
+            text-align:center; padding:80px 40px 40px;
+        }
+        .final-quote-text {
+            font-family:var(--font-d);
+            font-size:clamp(28px,4vw,52px);
+            letter-spacing:0.06em; line-height:1.3;
+            color:var(--text); margin-bottom:20px;
+        }
+        .final-quote-text .accent { color:var(--red); }
+        .final-quote-src {
+            font-size:10px; letter-spacing:0.3em; color:var(--text-3);
+        }
+
+        /* ─── ACCESS DENIED BLOCK ─── */
+        .access-denied {
+            border:1px solid rgba(204,17,17,0.3);
+            background:#030303; padding:40px;
+            position:relative; overflow:hidden; margin-top:8px;
+        }
+        .access-denied::before {
+            content:''; position:absolute; inset:0;
+            background:repeating-linear-gradient(
+                -45deg, transparent, transparent 5px,
+                rgba(204,17,17,0.025) 5px, rgba(204,17,17,0.025) 10px
+            );
+        }
+        .access-denied-header {
+            font-family:var(--font-d); font-size:20px;
+            letter-spacing:0.2em; color:var(--red);
+            margin-bottom:16px; position:relative; z-index:1;
+            animation:flicker 4s infinite;
+        }
+        @keyframes flicker {
+            0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.4} 94%{opacity:1}
+            96%{opacity:0.6} 97%{opacity:1}
+        }
+        .access-denied-body {
+            font-family:var(--font-m); font-size:11px;
+            color:rgba(204,17,17,0.3); line-height:2.2;
+            letter-spacing:0.08em; position:relative; z-index:1;
+        }
+        .access-denied-body .glitch-text {
+            animation:txt-glitch 3s infinite;
+        }
+        @keyframes txt-glitch {
+            0%,100%{opacity:0.3} 50%{opacity:0.15}
+            95%{opacity:0.3} 96%{opacity:0; transform:translateX(4px)} 97%{opacity:0.3; transform:none}
+        }
+    </style>
+</head>
+<body>
+
+<div id="read-progress"></div>
+<div class="page-glitch-layer" id="glitch-layer"></div>
+
+<!-- ================================================================
+     BOOT SCREEN
+================================================================ -->
+<div id="boot-screen">
+    <div class="boot-block">
+        <div class="boot-line green" id="bl0">// CONNEXION AU SERVEUR ISL — NIVEAU 5...</div>
+        <div class="boot-line green" id="bl1">// VÉRIFICATION DES ACCRÉDITATIONS...</div>
+        <div class="boot-line gold"  id="bl2">// ACCÈS ACCORDÉ — NIVEAU 5 CONFIRMÉ</div>
+        <div class="boot-line green" id="bl3">// CHARGEMENT : DOSSIER ORGANISATION ISL...</div>
+        <div class="boot-line dim"   id="bl4">// INTÉGRITÉ DES DONNÉES : 94%  —  [6% CORROMPUS OU CLASSIFIÉS]</div>
+        <div class="boot-line warn"  id="bl5">⚠ AVERTISSEMENT — CE DOCUMENT N'EXISTE PAS OFFICIELLEMENT</div>
+        <div class="boot-line warn"  id="bl6">⚠ TOUTE DIVULGATION ENTRAÎNE DES CONSÉQUENCES IMMÉDIATES</div>
+        <div class="boot-line dim"   id="bl7">// SESSION ENREGISTRÉE — VOUS ÊTES IDENTIFIÉ<span class="boot-cursor" id="boot-cursor"></span></div>
+    </div>
+    <div class="boot-bar-wrap" id="boot-bar-wrap">
+        <div class="boot-bar-fill" id="boot-bar-fill"></div>
+    </div>
+    <button id="boot-enter" onclick="enterSite()">ACCÉDER AU DOSSIER</button>
+</div>
+
+<!-- ================================================================
+     MAIN
+================================================================ -->
+<div id="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="dossier.html">← DOSSIER SERGEI</a>
+            <span>//</span>
+            <a href="index.html">← RETOUR ISL</a>
+            <span>//</span>
+            <span>DOSSIER ORGANISATION</span>
+        </div>
+        <div class="topbar-id">ISL-ORG-CLV5-FONDATION</div>
+        <div class="topbar-right">
+            <div class="status-dot"></div>
+            <span>SESSION ACTIVE</span>
+        </div>
+    </div>
+
+    <!-- MUSIC BAR -->
+    <div id="music-bar">
+        <div class="music-left">
+            <div class="music-dot" id="music-dot"></div>
+            <div class="music-label">AMBIANCE ISL — <span id="music-status">EN COURS</span></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+            <button class="music-btn active" id="btn-music" onclick="toggleMusic()">⏸ AMBIANCE</button>
+        </div>
+        <div class="music-vol">
+            <span class="vol-label">VOL</span>
+            <input type="range" class="vol-slider" id="vol-slider" min="0" max="100" value="35"
+                   oninput="setVolume(this.value)">
+        </div>
+    </div>
+
+    <!-- ── HERO ── -->
+    <div class="hero-org">
+        <div class="hero-bg-noise"></div>
+        <div class="hero-badge">⬛ CLASSIFICATION : NIVEAU 5 — ACCÈS RESTREINT ⬛</div>
+        <div class="hero-ref">// REF : ISL-ORG-CLV5 — FONDATION, STRUCTURE & DOCTRINE</div>
+        <div class="hero-title">
+            <div class="glitch-wrap" data-text="IRON STREET">IRON STREET</div><br>
+            <span class="accent glitch-wrap" data-text="LEAGUE">LEAGUE</span>
+        </div>
+        <div class="hero-sub">// DOSSIER ORGANISATION — ORIGINES — STRUCTURE — DOCTRINE — VISION</div>
+        <div class="hero-divider"></div>
+        <div class="hero-facts">
+            <div class="hero-fact">
+                <div class="hero-fact-label">FONDÉE</div>
+                <div class="hero-fact-value"><span class="redacted">██████</span></div>
+            </div>
+            <div class="hero-fact">
+                <div class="hero-fact-label">LOCALISATION</div>
+                <div class="hero-fact-value">LOS SANTOS</div>
+            </div>
+            <div class="hero-fact">
+                <div class="hero-fact-label">FONDATEUR</div>
+                <div class="hero-fact-value">ANTONOV, S.</div>
+            </div>
+            <div class="hero-fact">
+                <div class="hero-fact-label">STATUT</div>
+                <div class="hero-fact-value red">ACTIF</div>
+            </div>
+            <div class="hero-fact">
+                <div class="hero-fact-label">CLASSIFICATION</div>
+                <div class="hero-fact-value red">NIVEAU 5</div>
+            </div>
+        </div>
+        <div class="scroll-hint">▼ &nbsp; DÉFILER POUR LIRE &nbsp; ▼</div>
+    </div>
+
+    <!-- ── PRÉAMBULE ── -->
+    <div class="preamble-section org-section">
+        <div class="container">
+            <div class="preamble-box">
+                <div class="preamble-text">
+                    Ce document a été compilé à partir de sources dont la nature exacte ne peut être divulguée.
+                    Certaines informations ont été volontairement occultées pour des raisons de sécurité opérationnelle.
+                    Ce qui suit représente ce que nous savons. Ce que nous supposons.
+                    Et ce que nous ne comprenons pas encore.
+                </div>
+                <div class="preamble-author">— Bureau d'analyse ISL &nbsp;/&nbsp; Classification niveau 5 &nbsp;/&nbsp; Usage strictement interne</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SECTION 01 : GENÈSE ── -->
+    <section class="org-section" data-sound="low">
+        <div class="container">
+            <div class="section-tag">// 01 — ORIGINES</div>
+            <div class="h-bar"></div>
+            <div class="section-title">
+                <span class="scramble-title" data-text="GENÈSE">GENÈSE</span>
+            </div>
+            <div class="section-sub">// COMMENT TOUT A COMMENCÉ — LOS SANTOS, ANNÉE <span class="redacted">████</span></div>
+            <div class="two-col">
+                <div class="body-text">
+                    <p>
+                        Sergei Antonov n'a pas cherché Los Santos.
+                        Il a simplement arrêté de fuir dans la direction opposée.
+                    </p>
+                    <p>
+                        À 38 ans, il portait sur lui les traces d'un passé que personne n'était supposé connaître.
+                        Des années de service dans des zones que les cartes officielles refusaient de nommer.
+                        Un dossier militaire partiellement effacé, partiellement falsifié,
+                        partiellement perdu dans une "réorganisation administrative"
+                        dont les circonstances restent à ce jour non-élucidées.
+                        Ce qu'on sait avec certitude tient en peu de mots :
+                        cet homme savait lire les autres comme une partition.
+                        Et il avait appris que la musique la plus honnête se jouait sous pression maximale.
+                    </p>
+                    <p>
+                        Il a loué un appartement dans un quartier sans importance.
+                        Il a observé.
+                    </p>
+                    <p>
+                        Pendant <strong>six mois</strong>, Antonov n'a rien fait d'autre que cartographier.
+                        Cataloguer. Identifier les structures de pouvoir, les failles, les hommes capables
+                        et ceux qui jouaient à l'être.
+                        Los Santos avait une scène de combat underground — quelque chose qui aurait pu être une fondation.
+                        Des bagarres dans des parkings, des paris qui changeaient de mains dans des arrière-salles,
+                        des hommes qui se battaient pour des sommes qui ne reflétaient pas leur valeur réelle.
+                    </p>
+                    <p>
+                        Du chaos sans mémoire. Sans structure. <strong>Sans lendemain.</strong>
+                    </p>
+                    <p>
+                        Le gagnant du samedi soir n'était plus rien le lundi matin.
+                        Personne ne construisait sur ça.
+                        Les noms disparaissaient. Les victoires s'effaçaient.
+                        Ce qui aurait pu devenir une hiérarchie ne devenait rien du tout.
+                    </p>
+                    <p>
+                        Cela l'a mis en colère. Pas de façon visible —
+                        Antonov ne s'énerve pas. Mais cette nuit-là,
+                        il a sorti un carnet et commencé à écrire.
+                        Pas des notes. <span class="highlight">Des plans.</span>
+                    </p>
+                </div>
+                <div>
+                    <div class="photo-classified">
+                        <canvas id="noise-canvas-1"></canvas>
+                        <div class="photo-classified-overlay">
+                            <div class="photo-cls-tag">// PHOTO DE SURVEILLANCE</div>
+                            <div class="photo-cls-title">ANTONOV, S.</div>
+                            <div class="photo-cls-ref">REF: ISL-PHT-0001 — <span class="redacted">████████</span></div>
+                        </div>
+                        <div class="photo-classified-border"></div>
+                    </div>
+                    <div class="cls-block" style="margin-top:16px;">
+                        <div class="block-tag">// NOTE DE DOSSIER</div>
+                        <div class="block-text">
+                            Antonov a passé six mois à Los Santos avant d'approcher le premier combattant.
+                            Six mois à ne rien faire d'autre qu'observer.
+                            Ce niveau de patience dans un environnement aussi instable
+                            est statistiquement remarquable.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── SECTION 02 : LA PREMIÈRE NUIT ── -->
+    <section class="org-section" data-sound="mid">
+        <div class="container">
+            <div class="section-tag">// 02 — ÉVÉNEMENT FONDATEUR</div>
+            <div class="h-bar"></div>
+            <div class="section-title">
+                LA <span class="accent scramble-title" data-text="PREMIÈRE NUIT">PREMIÈRE NUIT</span>
+            </div>
+            <div class="section-sub">// ISL NIGHT 00 — DATE <span class="redacted">████████████</span> — ENTREPÔT PORTUAIRE, SECTEUR <span class="redacted">██████</span></div>
+            <div class="two-col">
+                <div>
+                    <div class="photo-classified" style="margin-bottom:24px;">
+                        <canvas id="noise-canvas-2"></canvas>
+                        <div class="photo-classified-overlay">
+                            <div class="photo-cls-tag">// PHOTO INTERNE — NON DIFFUSABLE</div>
+                            <div class="photo-cls-title">COMBAT #01</div>
+                            <div class="photo-cls-ref">REF: ISL-PHT-0002 — CLASSIFIÉ NIVEAU 5</div>
+                        </div>
+                        <div class="photo-classified-border"></div>
+                    </div>
+                    <div class="cls-block">
+                        <div class="block-tag">// DONNÉES VÉRIFIÉES</div>
+                        <ul class="block-list">
+                            <li>7 personnes présentes — identités non divulguées</li>
+                            <li>2 combattants — sélectionnés personnellement</li>
+                            <li>Aucun contrat signé — engagement verbal uniquement</li>
+                            <li>Durée du combat : <strong>11 minutes</strong></li>
+                            <li>Incidents médicaux déclarés : <strong>0</strong></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="body-text">
+                    <p>
+                        L'entrepôt était situé à la limite du port de Los Santos.
+                        Une zone industrielle sans surveillance caméra —
+                        Antonov avait vérifié, deux fois.
+                        Sept personnes invitées. Zéro publicité.
+                        Un message vocal transmis de main en main, sans trace écrite.
+                    </p>
+                    <p>
+                        Deux combattants. Sélectionnés après des semaines d'observation discrète.
+                        Pas les plus grands. Pas les plus forts.
+                        <strong>Les plus vrais.</strong>
+                    </p>
+                    <p>
+                        Aucun formulaire. Aucune règle écrite.
+                        Une seule question posée à chacun des deux hommes,
+                        séparément, la veille de l'événement :
+                    </p>
+                    <div class="cls-block-gold">
+                        <div class="block-tag block-tag-gold">// QUESTION POSÉE — SOURCE DIRECTE</div>
+                        <div class="block-text" style="font-family:var(--font-d);font-size:22px;letter-spacing:0.05em;color:var(--text);">
+                            "Est-ce que tu veux vraiment savoir ce que tu vaux ?"
+                        </div>
+                    </div>
+                    <p>
+                        Les deux ont dit oui.
+                    </p>
+                    <p>
+                        Le combat a duré onze minutes.
+                        Il n'y avait pas de rounds, pas de temps réglementaire,
+                        pas d'arbitre dans le sens classique du terme.
+                        Antonov se tenait à l'écart. Il regardait.
+                        Il enregistrait tout — pas sur papier, dans sa tête.
+                        Les réactions sous la douleur. Les décisions prises en moins d'une seconde.
+                        Ce qui survivait sous la pression et ce qui s'effondrait.
+                    </p>
+                    <p>
+                        À la fin, le gagnant saignait autant que le perdant.
+                        Ils se sont regardés. Personne n'a parlé.
+                    </p>
+                    <p>
+                        Antonov a attendu que tout le monde soit parti.
+                        Il a éteint la dernière lumière.
+                        Il savait déjà ce que les sept présents ne comprendraient
+                        que bien plus tard :
+                        <span class="highlight">l'ISL venait d'exister.</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── SECTION 03 : STRUCTURE ── -->
+    <section class="org-section" data-sound="mid">
+        <div class="container">
+            <div class="section-tag">// 03 — ARCHITECTURE INTERNE</div>
+            <div class="h-bar"></div>
+            <div class="section-title">
+                <span class="scramble-title" data-text="STRUCTURE">STRUCTURE</span>
+            </div>
+            <div class="section-sub">// HIÉRARCHIE OPÉRATIONNELLE — COMPARTIMENTAGE MAXIMAL</div>
+            <div class="levels-grid">
+                <div class="level-card lvl1">
+                    <div class="level-num">// NIVEAU 01</div>
+                    <div class="level-title">COMBATTANTS</div>
+                    <div class="level-desc">
+                        Sélectionnés personnellement. Jamais sur candidature spontanée.
+                        Antonov les approche. Jamais l'inverse.
+                        Un fighter ISL n'est pas quelqu'un qui voulait combattre —
+                        c'est quelqu'un qu'Antonov a décidé de tester.
+                    </div>
+                    <div class="level-status">STATUT : ACTIF — NOMBRE : <span class="redacted">██</span></div>
+                </div>
+                <div class="level-card lvl2">
+                    <div class="level-num">// NIVEAU 02</div>
+                    <div class="level-title">ORGANISATEURS</div>
+                    <div class="level-desc">
+                        Trois à cinq personnes par événement.
+                        Gèrent la logistique, le lieu, la sécurité périmétrique.
+                        Ne connaissent pas les niveaux supérieurs.
+                        Ne se connaissent pas entre eux d'un événement à l'autre.
+                        Compartimentage total.
+                    </div>
+                    <div class="level-status">STATUT : COMPARTIMENTÉ — ROTATIF</div>
+                </div>
+                <div class="level-card lvl3">
+                    <div class="level-num">// NIVEAU 03</div>
+                    <div class="level-title">FINANCEURS</div>
+                    <div class="level-desc">
+                        Identités <span class="redacted">████████████</span>.
+                        Contribuent via des canaux non traçables.
+                        En échange : accès VIP illimité et influence partielle
+                        sur la composition des fight cards.
+                        Leurs noms ne seront jamais prononcés.
+                    </div>
+                    <div class="level-status">STATUT : <span class="redacted">████████████████</span></div>
+                </div>
+                <div class="level-card lvl4">
+                    <div class="level-num">// NIVEAU 04</div>
+                    <div class="level-title">ANTONOV</div>
+                    <div class="level-desc">
+                        Décide de tout. Veto absolu sur chaque décision opérationnelle.
+                        Aucune initiative ne se prend sans son accord.
+                        Il n'est pas le patron.
+                        <strong>Il est le système.</strong>
+                    </div>
+                    <div class="level-status">FONDATEUR — NON LOCALISÉ — ACTIF</div>
+                </div>
+            </div>
+            <div class="cls-block">
+                <div class="block-tag">// ANALYSE STRUCTURELLE</div>
+                <div class="block-text">
+                    Le cloisonnement entre niveaux est intentionnel et total.
+                    Un organisateur de niveau 2 ne peut pas identifier un financeur de niveau 3.
+                    Un combattant de niveau 1 ne connaît que les personnes de son event.
+                    Cette architecture rend l'organisation extrêmement résistante
+                    à toute infiltration ou pression judiciaire.
+                    Chaque maillon peut tomber sans compromettre l'ensemble.
+                    C'est une conception militaire appliquée à une organisation civile clandestine.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── SECTION 04 : FINANCEMENT ── -->
+    <section class="org-section" data-sound="mid">
+        <div class="container">
+            <div class="section-tag">// 04 — ÉCONOMIE OPÉRATIONNELLE</div>
+            <div class="h-bar"></div>
+            <div class="section-title">
+                <span class="scramble-title" data-text="FINANCEMENT">FINANCEMENT</span>
+            </div>
+            <div class="section-sub">// CE QUI EST CONNU — CE QUI NE L'EST PAS — CE QUI NE LE SERA JAMAIS</div>
+            <div class="fin-grid">
+                <div class="fin-block">
+                    <div class="fin-block-title">// SOURCES CONFIRMÉES</div>
+                    <ul class="block-list">
+                        <li>
+                            <strong>Paris clandestins</strong> intégrés sur chaque événement.
+                            L'ISL prélève sa commission sur chaque mise,
+                            quelle qu'en soit l'issue. Système géré hors circuit bancaire.
+                        </li>
+                        <li>
+                            <strong>Passes d'accès VIP</strong> à tarification non fixe.
+                            Les spectateurs VIP paient pour être présents.
+                            Ils ne négocient pas. Ils savent pourquoi.
+                        </li>
+                        <li>
+                            Contributions privées identifiées de
+                            <span class="redacted">██</span> sources distinctes.
+                            Montants non divulgués. Canaux non traçables.
+                        </li>
+                    </ul>
+                </div>
+                <div class="fin-block dark">
+                    <div class="fin-block-title">// CLASSIFIÉ — ACCÈS RESTREINT</div>
+                    <ul class="block-list">
+                        <li>
+                            Certaines soirées se déroulent dans des propriétés
+                            appartenant à des tiers qui, officiellement,
+                            n'ont aucun lien avec l'ISL.
+                            <span class="redacted">████████████████</span>
+                        </li>
+                        <li>
+                            Des flux financiers en provenance de
+                            <span class="redacted">████████████████████████</span>
+                            ont été identifiés mais non confirmés.
+                        </li>
+                        <li>
+                            La nature exacte des arrangements avec les financeurs
+                            de niveau 3 reste <span class="redacted">████████████████████████</span>.
+                        </li>
+                        <li>
+                            Fonds opérationnels totaux estimés :
+                            <span class="redacted">████████████</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="analyst-note">
+                <strong>Note de l'analyste :</strong>
+                L'ISL ne dépend d'aucune organisation extérieure. Elle ne doit rien à personne.
+                C'est le premier principe de construction d'Antonov, et le plus rarement respecté
+                par les organisations qui tentent de faire la même chose. Il y a une raison pour ça.
+                L'indépendance financière, c'est l'indépendance décisionnelle.
+                C'est la seule liberté qui soit réelle dans ce milieu.
+            </div>
+        </div>
+    </section>
+
+    <!-- ── SECTION 05 : DOCTRINE ── -->
+    <section class="org-section doctrine-section" data-sound="high">
+        <div class="container">
+            <div class="section-tag">// 05 — PHILOSOPHIE FONDATRICE</div>
+            <div class="h-bar"></div>
+            <div class="section-title">
+                <span class="scramble-title" data-text="DOCTRINE">DOCTRINE</span>
+            </div>
+            <div class="section-sub">// POURQUOI LES COMBATS — LA VISION D'ANTONOV — SOURCE DIRECTE PROTÉGÉE</div>
+            <div class="two-col">
+                <div>
+                    <div class="body-text">
+                        <p>
+                            Ce n'est pas une question à laquelle Antonov répond directement.
+                            Il ne tient pas de discours. Il ne cherche pas à convaincre.
+                            Quand il parle, c'est pour constater — jamais pour persuader.
+                        </p>
+                        <p>
+                            Mais une source dont l'identité reste protégée,
+                            présente lors d'une conversation privée à <span class="redacted">████████</span>,
+                            a rapporté ces mots dans leur intégralité.
+                            Ils n'ont pas été démentis.
+                        </p>
+                    </div>
+                    <div class="big-quote">
+                        <div class="big-quote-text">
+                            "L'homme moderne a construit un monde où il n'a plus jamais besoin
+                            de savoir ce qu'il est vraiment. Tout est filtré. Sécurisé. Confortable.
+                            Il croit se connaître parce qu'il n'a jamais été mis dans une situation
+                            où il ne peut plus mentir à lui-même.
+                            Le combat enlève tout ça.
+                            En cinq minutes, tu sais. Lui sait. Moi je sais.
+                            C'est le seul endroit honnête qui reste."
+                        </div>
+                        <div class="big-quote-source">— Antonov, S. &nbsp;/&nbsp; Source directe protégée &nbsp;/&nbsp; Date : <span class="redacted">████████████</span></div>
+                    </div>
+                    <div class="body-text">
+                        <p>
+                            L'ISL n'est pas construite sur la violence.
+                            Elle est construite sur la vérité que la violence révèle.
+                        </p>
+                        <p>
+                            L'absence de rounds, le combat jusqu'à l'arrêt —
+                            ce ne sont pas des concessions à la brutalité.
+                            C'est la volonté délibérée d'éliminer tous les systèmes de protection artificielle
+                            qui permettent à un homme de ne pas se montrer complètement.
+                        </p>
+                        <p>
+                            Un ring avec rounds et arbitres, c'est un environnement
+                            où tu peux survivre en attendant que le temps passe.
+                            <strong>Dans l'ISL, il n'y a pas de temps à attendre.</strong>
+                            Il y a juste toi, lui, et ce que tu es.
+                        </p>
+                    </div>
+                    <div class="small-quote">"Je ne cherche pas la violence. Je la structure."</div>
+                    <div class="small-quote-src">— ISL, citations enregistrées</div>
+                </div>
+                <div>
+                    <div class="photo-classified" style="margin-bottom:24px;">
+                        <canvas id="noise-canvas-3"></canvas>
+                        <div class="photo-classified-overlay">
+                            <div class="photo-cls-tag">// PHOTO ORGANISATION — DIFFUSION RESTREINTE</div>
+                            <div class="photo-cls-title">IRON STREET LEAGUE</div>
+                            <div class="photo-cls-ref">REF: ISL-PHT-0003 — NIVEAU 5</div>
+                        </div>
+                        <div class="photo-classified-border"></div>
+                    </div>
+                    <div class="cls-block-gold">
+                        <div class="block-tag block-tag-gold">// DOCTRINE FONDATRICE — PRINCIPE</div>
+                        <div class="block-text" style="font-family:var(--font-d);font-size:26px;letter-spacing:0.05em;color:var(--text);line-height:1.4;">
+                            "L'homme moderne a oublié ce qu'il est.<br>
+                            <span style="color:var(--red);">Le combat lui rappelle.</span>"
+                        </div>
+                    </div>
+                    <div class="cls-block">
+                        <div class="block-tag">// ANALYSE COMPORTEMENTALE</div>
+                        <div class="block-text">
+                            Antonov ne parle pas de sport. Il ne parle pas de compétition.
+                            Il parle de <strong>vérité</strong>.
+                            L'ISL est son instrument de mesure.
+                            Chaque fighter est un sujet d'étude.
+                            Chaque combat est une expérience.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── SECTION 06 : AUJOURD'HUI ── -->
+    <section class="org-section" data-sound="mid">
+        <div class="container">
+            <div class="section-tag">// 06 — ÉTAT OPÉRATIONNEL</div>
+            <div class="h-bar"></div>
+            <div class="section-title">
+                <span class="scramble-title" data-text="AUJOURD'HUI">AUJOURD'HUI</span>
+            </div>
+            <div class="section-sub">// LE SILENCE STRATÉGIQUE — POURQUOI L'ISL RESTE DANS L'OMBRE</div>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-item-label">STATUT GÉNÉRAL</div>
+                    <div class="status-item-value ok">ACTIVE</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">ÉVÉNEMENTS ORGANISÉS</div>
+                    <div class="status-item-value"><span class="redacted">██</span></div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">COMBATTANTS ACTIFS</div>
+                    <div class="status-item-value"><span class="redacted">██</span></div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">INCIDENTS OFFICIELS</div>
+                    <div class="status-item-value ok">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">PLAINTES DÉPOSÉES</div>
+                    <div class="status-item-value ok">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">SURVEILLANCE POLICE</div>
+                    <div class="status-item-value red">CONFIRMÉE</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">INTERVENTION POLICE</div>
+                    <div class="status-item-value dim">AUCUNE</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">STATUT LÉGAL</div>
+                    <div class="status-item-value dim">INEXISTANT</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-item-label">RÉPUTATION PUBLIQUE</div>
+                    <div class="status-item-value gold">EN CONSTRUCTION</div>
+                </div>
+            </div>
+            <div class="body-text">
+                <p>
+                    L'organisation existe. Elle fonctionne. Elle a organisé
+                    <span class="redacted">██</span> événements sans qu'aucun incident
+                    ne donne lieu à une plainte officielle.
+                    Cette statistique n'est pas le fruit du hasard —
+                    elle est le résultat d'un travail de sélection et de contrôle
+                    d'une précision remarquable.
+                </p>
+                <p>
+                    La police de Los Santos a connaissance de l'ISL.
+                    Des rapports internes font état d'au minimum trois soirées identifiées.
+                    <strong>Aucune intervention n'a eu lieu.</strong>
+                    Les raisons de cette inaction font l'objet d'une enquête interne
+                    dont les conclusions n'ont pas été communiquées
+                    — ni en interne, ni en externe.
+                </p>
+                <p>
+                    Dans les cercles qui comptent à Los Santos —
+                    ceux qui opèrent en dehors des structures officielles —
+                    le nom ISL circule. On ne le prononce pas fort.
+                    On l'associe à quelque chose de réel, de fonctionnel, de <strong>durable</strong>.
+                    Ce n'est pas encore de la réputation.
+                    C'est quelque chose de plus précieux : de la crédibilité.
+                </p>
+                <p>
+                    Antonov sait qu'une organisation qui grandit trop vite
+                    est une organisation qui attire les mauvais regards avant d'être prête à les supporter.
+                    Il construit dans l'ombre. Méthodiquement.
+                    Il attend le bon moment avec la patience d'un homme
+                    qui a appris que la précipitation est la première cause d'échec.
+                </p>
+            </div>
+            <div class="quote-inline">"Ceux qui ne savent pas encore que nous existons — nous n'avons pas encore besoin qu'ils le sachent."</div>
+            <div class="quote-source">— ISL, citations enregistrées</div>
+        </div>
+    </section>
+
+    <!-- ── SECTION 07 : LA VISION ── -->
+    <section class="org-section" data-sound="high">
+        <div class="container">
+            <div class="section-tag">// 07 — OBJECTIFS OPÉRATIONNELS</div>
+            <div class="h-bar"></div>
+            <div class="section-title">
+                LA <span class="accent scramble-title" data-text="VISION">VISION</span>
+            </div>
+            <div class="section-sub">// CE QUI VIENT — PHASES OPÉRATIONNELLES — INFORMATIONS PARTIELLEMENT CLASSIFIÉES</div>
+            <div class="phase-list">
+                <div class="phase-item">
+                    <div class="phase-header">
+                        <div>
+                            <div class="phase-num">// PHASE 01</div>
+                            <div class="phase-title">FONDATION</div>
+                        </div>
+                        <div class="phase-badge done">60% COMPLÉTÉ</div>
+                    </div>
+                    <div class="phase-desc">
+                        Établir l'ISL comme référence underground de Los Santos.
+                        Pas connue du grand public — connue des bonnes personnes.
+                        Ceux qui ont du poids dans la ville, dans les milieux qui comptent.
+                        Bâtir une réputation qui n'a pas besoin de publicité
+                        parce qu'elle se transmet par ceux qui l'ont vue de leurs propres yeux.
+                    </div>
+                    <div class="phase-bar-wrap">
+                        <div class="phase-bar done" data-width="60"></div>
+                        <div class="phase-bar-pct">60%</div>
+                    </div>
+                </div>
+                <div class="phase-item">
+                    <div class="phase-header">
+                        <div>
+                            <div class="phase-num">// PHASE 02</div>
+                            <div class="phase-title">EXPANSION</div>
+                        </div>
+                        <div class="phase-badge ongoing">EN COURS</div>
+                    </div>
+                    <div class="phase-desc">
+                        Transformer les fighters ISL en actifs reconnus.
+                        Qu'un combattant ISL soit identifié en dehors de l'organisation —
+                        dans les affaires, dans les relations de force, dans les négociations informelles —
+                        comme quelqu'un à prendre au sérieux.
+                        Faire en sorte que le label ISL vale quelque chose dans chaque contexte,
+                        au-delà du ring.
+                    </div>
+                    <div class="phase-bar-wrap">
+                        <div class="phase-bar ongoing" data-width="35"></div>
+                        <div class="phase-bar-pct ongoing">EN COURS</div>
+                    </div>
+                </div>
+                <div class="phase-item locked">
+                    <div class="phase-header">
+                        <div>
+                            <div class="phase-num">// PHASE 03</div>
+                            <div class="phase-title"><span class="redacted" style="font-size:28px;">████████████████████</span></div>
+                        </div>
+                        <div class="phase-badge locked">ACCÈS REFUSÉ</div>
+                    </div>
+                    <div class="access-denied">
+                        <div class="access-denied-header">⬛ ACCÈS REFUSÉ — NIVEAU 5 INSUFFISANT ⬛</div>
+                        <div class="access-denied-body">
+                            <div class="glitch-text">CE DOCUMENT REQUIERT UNE AUTORISATION DE NIVEAU ██</div>
+                            <br>
+                            ████████████████████████████████████████████████████████████<br>
+                            ███████████████████ ████████████████ ██████████████████████<br>
+                            ██████████ ████████████ ████████ ████████████████████ ██████<br>
+                            ████ ██████████████████████████████████████ ███████████████<br>
+                            ████████████████████████████████████████████████████████████
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="analyst-note" style="margin-top:40px;">
+                <strong>Note de l'analyste :</strong>
+                Le troisième objectif d'Antonov n'a pas été divulgué à ce jour,
+                ni à l'intérieur ni à l'extérieur de l'organisation.
+                Plusieurs sources proches du sujet confirment son existence.
+                Une source a utilisé le mot <em>"institution"</em>.
+                Une autre a utilisé le mot <em>"permanence"</em>.
+                Ces deux termes ne sont pas incompatibles avec la philosophie observée.
+            </div>
+        </div>
+    </section>
+
+    <!-- ── CITATION FINALE ── -->
+    <div class="final-quote org-section" data-sound="high">
+        <div class="final-quote-text">
+            "Je ne construis pas quelque chose<br>
+            <span class="accent">pour aujourd'hui.</span><br>
+            Je construis quelque chose qui existera<br>
+            quand je ne serai plus là pour le tenir."
+        </div>
+        <div class="final-quote-src">— ANTONOV, S. &nbsp;/&nbsp; SOURCE DIRECTE PROTÉGÉE</div>
+    </div>
+
+    <!-- ── FOOTER ── -->
+    <div class="org-footer">
+        <div class="footer-ref">
+            ISL-ORG-CLV5-FONDATION — DOCUMENT INTERNE<br>
+            USAGE STRICTEMENT RP — FICTION ROLEPLAY FLASHFA
+        </div>
+        <div class="footer-links">
+            <a href="dossier.html">← DOSSIER SERGEI</a>
+            <a href="terminal.html">// TERMINAL</a>
+            <a href="index.html">← RETOUR ISL</a>
+        </div>
+    </div>
+
+</div><!-- /main -->
+
+<script>
+/* ================================================================
+   BOOT SEQUENCE
+================================================================ */
+const BOOT_LINES  = ['bl0','bl1','bl2','bl3','bl4','bl5','bl6','bl7'];
+let   bootDelay   = 250;
+
+BOOT_LINES.forEach((id, i) => {
+    setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('show');
+    }, bootDelay + i * 420);
+});
+
+setTimeout(() => {
+    const wrap = document.getElementById('boot-bar-wrap');
+    if (wrap) { wrap.classList.add('show'); }
+    setTimeout(() => {
+        const fill = document.getElementById('boot-bar-fill');
+        if (fill) fill.style.width = '100%';
+    }, 100);
+    setTimeout(() => {
+        const btn = document.getElementById('boot-enter');
+        if (btn) btn.style.display = 'block';
+    }, 2400);
+}, bootDelay + BOOT_LINES.length * 420 + 200);
+
+function enterSite() {
+    const boot = document.getElementById('boot-screen');
+    boot.style.transition = 'opacity 0.8s ease';
+    boot.style.opacity    = '0';
+    setTimeout(() => {
+        boot.style.display = 'none';
+        const main = document.getElementById('main');
+        main.style.display  = 'block';
+        main.style.opacity  = '0';
+        main.style.transition = 'opacity 0.6s ease';
+        setTimeout(() => { main.style.opacity = '1'; }, 50);
+        document.getElementById('music-bar').classList.add('visible');
+        initAudio();
+        initNoiseCanvases();
+        initScrollObserver();
+        initScrollProgress();
+        initPageGlitch();
+    }, 800);
+}
+
+/* ================================================================
+   WEB AUDIO — AMBIENT ENGINE (PLUS SOMBRE QUE DOSSIER)
+================================================================ */
+let audioCtx   = null;
+let masterGain = null;
+let musicActive = true;
+let currentIntensity = 0.35;
+let targetIntensity  = 0.35;
+
+function initAudio() {
+    try {
+        audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 0;
+        masterGain.connect(audioCtx.destination);
+        buildAmbient();
+        masterGain.gain.linearRampToValueAtTime(0.35, audioCtx.currentTime + 5);
+        scheduleLFO();
+    } catch(e) {
+        document.getElementById('music-status').textContent = 'NON SUPPORTÉ';
+    }
+}
+
+function buildAmbient() {
+    if (!audioCtx) return;
+
+    const mkOsc = (freq, type, gain) => {
+        const osc = audioCtx.createOscillator();
+        const g   = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        g.gain.value = gain;
+        osc.connect(g); g.connect(masterGain);
+        osc.start();
+        return { osc, g };
+    };
+
+    // Sub bass — très grave, pesant
+    const sub   = mkOsc(32,   'sine',     0.65);
+    const sub2  = mkOsc(34.5, 'sine',     0.45);
+
+    // Nappe médium — tension
+    const mid   = mkOsc(64,   'sawtooth', 0.07);
+    const filt  = audioCtx.createBiquadFilter();
+    filt.type = 'lowpass'; filt.frequency.value = 120; filt.Q.value = 4;
+    mid.osc.disconnect(); mid.osc.connect(filt); filt.connect(mid.g);
+
+    // Shimmer très discret
+    const shimmer = mkOsc(768, 'sine', 0.018);
+    const shimFilt = audioCtx.createBiquadFilter();
+    shimFilt.type = 'bandpass'; shimFilt.frequency.value = 780; shimFilt.Q.value = 8;
+    shimmer.osc.disconnect(); shimmer.osc.connect(shimFilt); shimFilt.connect(shimmer.g);
+
+    // LFO respiration lente — plus lent que dossier, plus lourd
+    const lfo1 = mkOsc(0.06, 'sine', 0.18);
+    lfo1.g.connect(sub.g.gain);
+    const lfo2 = mkOsc(0.09, 'sine', 0.12);
+    lfo2.g.connect(sub2.g.gain);
+
+    // Bruit filtré
+    const bufferSize = audioCtx.sampleRate * 4;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer; noiseSource.loop = true;
+    const noiseGain = audioCtx.createGain(); noiseGain.gain.value = 0.012;
+    const noiseFilt = audioCtx.createBiquadFilter();
+    noiseFilt.type = 'lowpass'; noiseFilt.frequency.value = 90;
+    noiseSource.connect(noiseFilt); noiseFilt.connect(noiseGain); noiseGain.connect(masterGain);
+    noiseSource.start();
+
+    scheduleSubBoom();
+}
+
+function scheduleSubBoom() {
+    if (!audioCtx || !musicActive) return;
+    const delay = 6000 + Math.random() * 10000;
+    setTimeout(() => {
+        if (!audioCtx || !musicActive) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const g   = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = 28;
+            g.gain.value = 0;
+            osc.connect(g); g.connect(masterGain);
+            osc.start();
+            g.gain.linearRampToValueAtTime(0.55, audioCtx.currentTime + 0.15);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
+            setTimeout(() => { try { osc.stop(); } catch(e){} }, 2600);
+        } catch(e) {}
+        scheduleSubBoom();
+    }, delay);
+}
+
+function scheduleLFO() {
+    if (!audioCtx || !masterGain) return;
+    // Ajustement continu du gain vers la cible
+    setInterval(() => {
+        if (!audioCtx || !masterGain || !musicActive) return;
+        currentIntensity += (targetIntensity - currentIntensity) * 0.05;
+        const vol = parseFloat(document.getElementById('vol-slider').value) / 100;
+        masterGain.gain.setTargetAtTime(currentIntensity * vol, audioCtx.currentTime, 0.5);
+    }, 200);
+}
+
+function playImpactSound(intensity) {
+    if (!audioCtx || !musicActive) return;
+    try {
+        const osc = audioCtx.createOscillator();
+        const g   = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(48, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(24, audioCtx.currentTime + 0.8);
+        g.gain.value = 0;
+        osc.connect(g); g.connect(masterGain);
+        osc.start();
+        g.gain.linearRampToValueAtTime(intensity * 0.4, audioCtx.currentTime + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.9);
+        setTimeout(() => { try { osc.stop(); } catch(e){} }, 1000);
+    } catch(e) {}
+}
+
+function toggleMusic() {
+    musicActive = !musicActive;
+    if (!audioCtx) return;
+    const btn = document.getElementById('btn-music');
+    if (musicActive) {
+        masterGain.gain.linearRampToValueAtTime(targetIntensity, audioCtx.currentTime + 0.8);
+        btn.classList.add('active');
+        btn.textContent = '⏸ AMBIANCE';
+        document.getElementById('music-status').textContent = 'EN COURS';
+    } else {
+        masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.8);
+        btn.classList.remove('active');
+        btn.textContent = '▶ AMBIANCE';
+        document.getElementById('music-status').textContent = 'EN PAUSE';
+    }
+}
+
+function setVolume(val) {
+    if (!masterGain || !audioCtx) return;
+    const v = val / 100;
+    masterGain.gain.setTargetAtTime(musicActive ? currentIntensity * v : 0, audioCtx.currentTime, 0.1);
+}
+
+/* ================================================================
+   CANVAS NOISE — PHOTOS CLASSIFIÉES
+================================================================ */
+function initNoiseCanvases() {
+    ['noise-canvas-1','noise-canvas-2','noise-canvas-3'].forEach((id, idx) => {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        const parent = canvas.parentElement;
+        canvas.width  = parent.offsetWidth  || 400;
+        canvas.height = 280;
+        const ctx = canvas.getContext('2d');
+        let frame = 0;
+
+        function drawFrame() {
+            const W = canvas.width, H = canvas.height;
+            const img = ctx.createImageData(W, H);
+            const d   = img.data;
+            for (let i = 0; i < d.length; i += 4) {
+                const r = Math.random();
+                const v = r > 0.93 ? 18 + Math.random() * 22 : 3 + Math.random() * 5;
+                d[i]   = v * (idx === 0 ? 0.25 : idx === 1 ? 0.15 : 0.2); // R
+                d[i+1] = v * 0.06; // G
+                d[i+2] = v * 0.06; // B
+                d[i+3] = 255;
+            }
+            ctx.putImageData(img, 0, 0);
+
+            // Ligne de glitch occasionnelle
+            if (frame % 60 === 0 && Math.random() > 0.6) {
+                const y  = Math.floor(Math.random() * H);
+                const h2 = Math.floor(Math.random() * 4) + 1;
+                ctx.fillStyle = `rgba(204,17,17,${0.04 + Math.random() * 0.06})`;
+                ctx.fillRect(0, y, W, h2);
+            }
+            // Scanline horizontale
+            if (Math.random() > 0.97) {
+                const y = Math.floor(Math.random() * H);
+                ctx.fillStyle = `rgba(220,220,220,0.015)`;
+                ctx.fillRect(0, y, W, 1);
+            }
+            frame++;
+            requestAnimationFrame(drawFrame);
+        }
+        drawFrame();
+    });
+}
+
+/* ================================================================
+   SCROLL OBSERVER — RÉVÉLER LES SECTIONS
+================================================================ */
+const SOUND_MAP = { low: 0.3, mid: 0.42, high: 0.58 };
+
+function initScrollObserver() {
+    const sections = document.querySelectorAll('.org-section');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.classList.contains('visible')) {
+                entry.target.classList.add('visible');
+
+                // Scramble titles
+                entry.target.querySelectorAll('.scramble-title').forEach(el => {
+                    scrambleText(el, el.dataset.text || el.textContent);
+                });
+
+                // Phase bars
+                entry.target.querySelectorAll('.phase-bar[data-width]').forEach(bar => {
+                    setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 400);
+                });
+
+                // Audio intensity
+                const sound = entry.target.dataset.sound;
+                if (sound && SOUND_MAP[sound] !== undefined) {
+                    targetIntensity = SOUND_MAP[sound];
+                    playImpactSound(SOUND_MAP[sound]);
+                }
+            }
+        });
+    }, { threshold: 0.15 });
+
+    sections.forEach(s => observer.observe(s));
+}
+
+/* ================================================================
+   TEXT SCRAMBLE
+================================================================ */
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789█▓░▒';
+
+function scrambleText(el, final, duration) {
+    if (!final) return;
+    duration = duration || 1100;
+    const total = Math.floor(duration / 45);
+    let frame = 0;
+    el.dataset.text = final;
+
+    const iv = setInterval(() => {
+        el.textContent = [...final].map((ch, i) => {
+            if (ch === ' ' || ch === "'" || ch === '-') return ch;
+            const progress    = frame / total;
+            const charProgress = i / final.length;
+            if (progress > charProgress + 0.15) return ch;
+            return CHARS[Math.floor(Math.random() * CHARS.length)];
+        }).join('');
+        if (++frame > total) {
+            clearInterval(iv);
+            el.textContent = final;
+        }
+    }, 45);
+}
+
+/* ================================================================
+   READING PROGRESS BAR
+================================================================ */
+function initScrollProgress() {
+    const bar = document.getElementById('read-progress');
+    window.addEventListener('scroll', () => {
+        const scrollTop  = window.scrollY;
+        const docHeight  = document.documentElement.scrollHeight - window.innerHeight;
+        const pct        = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        bar.style.width  = Math.min(pct, 100) + '%';
+    }, { passive: true });
+}
+
+/* ================================================================
+   PAGE GLITCH ALÉATOIRE
+================================================================ */
+function initPageGlitch() {
+    const layer = document.getElementById('glitch-layer');
+    setInterval(() => {
+        if (Math.random() < 0.12 && musicActive) {
+            layer.classList.add('active');
+            setTimeout(() => layer.classList.remove('active'), 200);
+        }
+    }, 9000);
+
+    // Glitch plus intense sur les sections "high"
+    document.querySelectorAll('[data-sound="high"]').forEach(section => {
+        const obs = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting && Math.random() > 0.5) {
+                    setTimeout(() => {
+                        layer.classList.add('active');
+                        setTimeout(() => layer.classList.remove('active'), 180);
+                    }, 800);
+                }
+            });
+        }, { threshold: 0.3 });
+        obs.observe(section);
+    });
+}
+</script>
+</body>
+</html>
