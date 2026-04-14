@@ -1522,7 +1522,7 @@ function enterSite() {
         setTimeout(() => { main.style.opacity = '1'; }, 50);
         document.getElementById('music-bar').classList.add('visible');
         initAudio();
-        initNoiseCanvases();
+        initPhotoCanvases();
         initScrollObserver();
         initScrollProgress();
         initPageGlitch();
@@ -1678,50 +1678,60 @@ function setVolume(val) {
 }
 
 /* ================================================================
-   CANVAS NOISE — PHOTOS CLASSIFIÉES
+   CANVAS PHOTOS CHIFFRÉES (même logique que dossier.html)
 ================================================================ */
-function initNoiseCanvases() {
-    ['noise-canvas-1','noise-canvas-2','noise-canvas-3'].forEach((id, idx) => {
+function initPhotoCanvases() {
+    function initCryptCanvas(id) {
         const canvas = document.getElementById(id);
         if (!canvas) return;
-        const parent = canvas.parentElement;
-        canvas.width  = parent.offsetWidth  || 400;
-        canvas.height = 280;
         const ctx = canvas.getContext('2d');
-        let frame = 0;
+        let w = 0, h = 0;
 
-        function drawFrame() {
-            const W = canvas.width, H = canvas.height;
-            const img = ctx.createImageData(W, H);
-            const d   = img.data;
-            for (let i = 0; i < d.length; i += 4) {
-                const r = Math.random();
-                const v = r > 0.93 ? 18 + Math.random() * 22 : 3 + Math.random() * 5;
-                d[i]   = v * (idx === 0 ? 0.25 : idx === 1 ? 0.15 : 0.2); // R
-                d[i+1] = v * 0.06; // G
-                d[i+2] = v * 0.06; // B
-                d[i+3] = 255;
+        function resize() {
+            const rect = canvas.getBoundingClientRect();
+            w = canvas.width  = Math.max(1, Math.floor(rect.width));
+            h = canvas.height = Math.max(1, Math.floor(rect.height));
+        }
+        resize();
+        new ResizeObserver(resize).observe(canvas);
+
+        let lastGlitch = 0;
+
+        function draw(ts) {
+            if (!w || !h) { requestAnimationFrame(draw); return; }
+
+            // Bruit pixel rougeâtre
+            const img  = ctx.createImageData(w, h);
+            const data = img.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const v = Math.random() * 210;
+                data[i]   = (v * 0.88) | 0;
+                data[i+1] = 0;
+                data[i+2] = 0;
+                data[i+3] = (Math.random() * 150 + 25) | 0;
             }
             ctx.putImageData(img, 0, 0);
 
-            // Ligne de glitch occasionnelle
-            if (frame % 60 === 0 && Math.random() > 0.6) {
-                const y  = Math.floor(Math.random() * H);
-                const h2 = Math.floor(Math.random() * 4) + 1;
-                ctx.fillStyle = `rgba(204,17,17,${0.04 + Math.random() * 0.06})`;
-                ctx.fillRect(0, y, W, h2);
+            // Lignes de glitch toutes les ~150ms
+            if (ts - lastGlitch > 100 + Math.random() * 160) {
+                lastGlitch = ts;
+                const strips = (Math.random() * 6 + 1) | 0;
+                for (let s = 0; s < strips; s++) {
+                    const sy = (Math.random() * h) | 0;
+                    const sh = (Math.random() * 14 + 2) | 0;
+                    const dx = ((Math.random() - 0.5) * 60) | 0;
+                    ctx.drawImage(canvas, 0, sy, w, sh, dx, sy, w, sh);
+                }
             }
-            // Scanline horizontale
-            if (Math.random() > 0.97) {
-                const y = Math.floor(Math.random() * H);
-                ctx.fillStyle = `rgba(220,220,220,0.015)`;
-                ctx.fillRect(0, y, W, 1);
-            }
-            frame++;
-            requestAnimationFrame(drawFrame);
+
+            requestAnimationFrame(draw);
         }
-        drawFrame();
-    });
+        requestAnimationFrame(draw);
+    }
+
+    initCryptCanvas('noise-canvas-1');
+    initCryptCanvas('noise-canvas-2');
+    initCryptCanvas('noise-canvas-3');
 }
 
 /* ================================================================
