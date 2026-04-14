@@ -237,6 +237,10 @@
   .line.bl { color: transparent; user-select: none; }
   .line.sep { color: var(--grn-dark); }
   .line.sys { color: #555; font-size: 11px; }
+  /* ENTITY _ */
+  .line.gh  { color: #c8c8c8; }
+  .line.ghd { color: #777; }
+  .line.ghs { color: #333; }
 
   /* Glitch text */
   .glitch-text {
@@ -422,6 +426,50 @@
     50%       { box-shadow: inset 0 0 0 1px var(--red), inset 0 0 20px rgba(204,17,17,0.15); }
   }
   #main.alert { animation: border-pulse 0.8s ease-in-out infinite; }
+
+  /* ── ENTITY FACE OVERLAY ── */
+  #face-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.96);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 22px;
+    z-index: 8900;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #face-overlay.visible {
+    opacity: 1;
+    animation: face-glitch 0.06s steps(1) infinite;
+  }
+  #face-art {
+    font-family: var(--font-m);
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--red);
+    text-shadow: 0 0 5px var(--red), 0 0 16px rgba(204,17,17,0.5);
+    white-space: pre;
+    text-align: center;
+  }
+  #face-msg {
+    font-family: var(--font-m);
+    font-size: 13px;
+    color: var(--grn);
+    text-shadow: 0 0 10px var(--grn);
+    letter-spacing: 0.3em;
+    opacity: 0.9;
+  }
+  @keyframes face-glitch {
+    0%   { transform: translate(0,0);    filter: none; }
+    20%  { transform: translate(-2px,0); filter: brightness(1.3) hue-rotate(5deg); }
+    40%  { transform: translate(0,0);    filter: none; }
+    60%  { transform: translate(1px,0);  filter: brightness(0.9); }
+    80%  { transform: translate(-1px,1px); filter: hue-rotate(-5deg); }
+    100% { transform: translate(0,0);    filter: none; }
+  }
 </style>
 </head>
 <body>
@@ -484,6 +532,12 @@
 <div id="reboot">
   <div id="reboot-msg"></div>
   <button id="reboot-restart" onclick="location.reload()">REDÉMARRER</button>
+</div>
+
+<!-- ENTITY FACE OVERLAY -->
+<div id="face-overlay">
+  <pre id="face-art"></pre>
+  <div id="face-msg"></div>
 </div>
 
 <script>
@@ -665,11 +719,20 @@ const DB = {
       ['', 'bl'],
       ['SUJETS INTERROGEABLES :', 'g'],
       ['  • SERGEI / ANTONOV — Identité du fondateur', 'gd'],
+      ['  • MILITAIRE / PASSÉ — Origines d\'Antonov', 'gd'],
       ['  • ISL / ORGANISATION — Structure générale', 'gd'],
       ['  • COMBAT / RÈGLES — Protocoles de combat', 'gd'],
       ['  • FIGHTERS / COMBATTANTS — Roster actif', 'gd'],
+      ['  • CHAMPION — Dossier Kozlov', 'gd'],
       ['  • FINANCEMENT / ARGENT — Sources de revenus', 'gd'],
       ['  • VISION / FUTUR — Plans de l\'organisation', 'gd'],
+      ['  • PROCHAIN EVENT / DATE — Night of Blood III', 'gd'],
+      ['  • STREAM / REGARDER — Accès live', 'gd'],
+      ['  • REJOINDRE / CANDIDATER — Intégrer l\'ISL', 'gd'],
+      ['  • VIP — Accès premium', 'gd'],
+      ['  • CONTACT — Joindre l\'ISL', 'gd'],
+      ['  • MORTS / BLESSÉS — Incidents classifiés', 'gd'],
+      ['  • DISPARUS — Sujets non localisés', 'gd'],
       ['  • LOCALISATION / LIEU — Coordonnées des events', 'gd'],
       ['  • HISTORIQUE / PASSÉ — Archives des events', 'gd'],
       ['  • QUI SUIS-JE — Informations sur vous', 'gd'],
@@ -921,6 +984,224 @@ const DB = {
     ],
     corruption: 0,
   },
+
+  /* ── NOUVELLES ENTRÉES ── */
+  event_next: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : PROCHAIN EVENT', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['DÉSIGNATION   : ISL NIGHT OF BLOOD III', 'go'],
+      ['DATE          : 18 AVRIL 2026 — 21H00', 'go'],
+      ['ACCÈS         : Invitation ou VIP Pass uniquement', 'gd'],
+      ['LIEU          : Los Santos — Communiqué 1h avant', 'gd'],
+      ['', 'bl'],
+      ['AFFICHE PRINCIPALE :', 'g'],
+      ['  KOZLOV "THE BUTCHER" (9-1-0) ⚔  VORONOV "IRON JAW" (6-0-1)', 'go'],
+      ['  CHAMPION vs. CHALLENGER — Format bare knuckle, no rounds', 'gd'],
+      ['', 'bl'],
+      ['CO-MAIN EVENT :', 'g'],
+      ['  SILVA MARCOS (5-2-0) vs. FERNANDEZ TONY (4-1-0)', 'gd'],
+      ['', 'bl'],
+      ['STREAM : LIVE SUR ISL.GG — Accès via VIP Pass', 'gd'],
+      ['AMBIANCE : Interdite aux âmes sensibles.', 'w'],
+      ['', 'bl'],
+    ],
+    corruption: 0,
+  },
+
+  stream_watch: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : DIFFUSION LIVE', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['PLATEFORME    : ISL.GG — Stream live exclusif', 'g'],
+      ['ACCÈS GRATUIT : Flux principal — qualité réduite', 'gd'],
+      ['ACCÈS VIP     : Flux HD + coulisses IG + caméras annexes', 'go'],
+      ['', 'bl'],
+      ['PROTOCOLE :', 'g'],
+      ['  Le stream démarre 30 min avant l\'event.', 'gd'],
+      ['  Les combats sont diffusés sans censure.', 'gd'],
+      ['  Aucune rediffusion officielle n\'existe.', 'gd'],
+      ['', 'bl'],
+      ['NOTE : Les streams ISL ne sont pas archivés.', 'gd'],
+      ['Ce que tu vois le soir même disparaît.', 'gd'],
+      ['', 'bl'],
+    ],
+    corruption: 0,
+  },
+
+  join_isl: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : INTÉGRATION ISL', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['', 'bl'],
+      ['[COMBATTANT]', 'go'],
+      ['  L\'ISL ne recrute pas. Elle observe.', 'gd'],
+      ['  Si tu es intéressant, on te contacte.', 'gd'],
+      ['  Conditions minimum :', 'gd'],
+      ['    — Actif sur FLASHFA RP', 'gd'],
+      ['    — Réputation dans le milieu', 'gd'],
+      ['    — Capacité à encaisser et à rendre', 'gd'],
+      ['  Candidature directe : [ADRESSE CLASSIFIÉE]', 'rd'],
+      ['', 'bl'],
+      ['[SPECTATEUR]', 'g'],
+      ['  Assister à un event ISL sans être sur la liste :', 'gd'],
+      ['  Impossible. Les lieux ne sont pas publics.', 'gd'],
+      ['  Option : VIP Pass — accès stream + coulisses IG', 'gd'],
+      ['', 'bl'],
+      ['AVERTISSEMENT : Toute présence non autorisée est gérée.', 'r'],
+      ['', 'bl'],
+    ],
+    corruption: 1,
+  },
+
+  vip: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : ACCÈS VIP', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['VIP PASS — IRON STREET LEAGUE', 'go'],
+      ['', 'bl'],
+      ['INCLUS :', 'g'],
+      ['  ✓ Accès stream live HD — toutes caméras', 'gd'],
+      ['  ✓ Coulisses IG pendant l\'event', 'gd'],
+      ['  ✓ Accès vestiaires (accompagné)', 'gd'],
+      ['  ✓ Contact direct avec l\'organisation', 'gd'],
+      ['', 'bl'],
+      ['NON INCLUS :', 'g'],
+      ['  ✗ Accès physique au lieu de combat', 'rd'],
+      ['  ✗ Garantie d\'intégrité physique', 'rd'],
+      ['', 'bl'],
+      ['TARIF : [NÉGOCIÉ DIRECTEMENT AVEC L\'ISL]', 'go'],
+      ['CONTACT : [VOIR COMMANDE CONTACT]', 'gd'],
+      ['', 'bl'],
+    ],
+    corruption: 0,
+  },
+
+  contact: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : CONTACT ISL', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['L\'ISL ne répond pas aux messages non sollicités.', 'gd'],
+      ['', 'bl'],
+      ['CANAUX OFFICIELS :', 'g'],
+      ['  Réseau IG FLASHFA RP — compte @ISL_Official', 'gd'],
+      ['  Les demandes sérieuses reçoivent une réponse.', 'gd'],
+      ['  Les autres sont ignorées.', 'gd'],
+      ['', 'bl'],
+      ['CONTACT ANTONOV DIRECTEMENT : [ACCÈS REFUSÉ]', 'rd'],
+      ['  Antonov ne répond pas aux inconnus.', 'rd'],
+      ['  Si tu le mérites, il te trouvera lui-même.', 'rd'],
+      ['', 'bl'],
+    ],
+    corruption: 0,
+  },
+
+  champion: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : CHAMPION ISL', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['KOZLOV, VASIL — "THE BUTCHER"', 'go'],
+      ['NUMÉRO        : #01', 'go'],
+      ['STATUT        : CHAMPION EN TITRE', 'go'],
+      ['RECORD        : 9V — 1D — 0N', 'go'],
+      ['KO            : 8 sur 9 victoires', 'go'],
+      ['', 'bl'],
+      ['PROFIL :', 'g'],
+      ['  Poids lourd. Frappe gauche destructrice.', 'gd'],
+      ['  Pas de stratégie complexe — pression constante.', 'gd'],
+      ['  Ses adversaires s\'effondrent. C\'est tout.', 'gd'],
+      ['', 'bl'],
+      ['SEULE DÉFAITE :', 'g'],
+      ['  [DONNÉES PARTIELLEMENT RETIRÉES]', 'rd'],
+      ['  Adversaire : [NOM SUPPRIMÉ]', 'rd'],
+      ['  Résultat : TKO — round unique — 4 min 12 sec', 'rd'],
+      ['  Statut adversaire actuel : [INCONNU]', 'rd'],
+      ['', 'bl'],
+      ['PROCHAIN COMBAT : vs. VORONOV — 18/04/2026', 'go'],
+      ['FAVORI : OUI — cote 1.4', 'go'],
+      ['', 'bl'],
+    ],
+    corruption: 1,
+  },
+
+  military: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : PASSÉ MILITAIRE ANTONOV', 'r'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['NIVEAU D\'ACCÈS REQUIS : 7', 'r'],
+      ['NIVEAU ACTUEL         : [INSUFFISANT]', 'r'],
+      ['', 'bl'],
+      ['DONNÉES PARTIELLES — FUITES NON CONFIRMÉES :', 'g'],
+      ['  Unité d\'origine      : [████████████████]', 'rd'],
+      ['  Période de service   : [████] — [████]', 'rd'],
+      ['  Théâtres d\'opération : [DONNÉES PURGÉES]', 'rd'],
+      ['  Décorations          : [SUPPRIMÉES]', 'rd'],
+      ['  Raison du départ     : [CLASSIFIÉ NIVEAU 9]', 'rd'],
+      ['', 'bl'],
+      ['CE QUI EST CONNU :', 'g'],
+      ['  Il a servi. Il est revenu différent.', 'gd'],
+      ['  Certains anciens collègues ne l\'ont pas reconnu.', 'gd'],
+      ['  La plupart ne sont plus joignables.', 'gd'],
+      ['', 'bl'],
+      ['AVERTISSEMENT : Cette section est surveillée en temps réel.', 'r'],
+      ['', 'bl'],
+    ],
+    corruption: 4,
+  },
+
+  deaths: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : INCIDENTS / BLESSÉS', 'r'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['DONNÉES SOUMISES À RESTRICTION MAXIMALE', 'r'],
+      ['', 'bl'],
+      ['BLESSÉS GRAVES RECENSÉS (non officiel) : ██', 'rd'],
+      ['HOSPITALISATIONS CONFIRMÉES            : ██', 'rd'],
+      ['DÉCÈS OFFICIELLEMENT LIÉS À L\'ISL      : [AUCUN — OFFICIEL]', 'rd'],
+      ['DÉCÈS NON OFFICIELS                    : [DONNÉES RETIRÉES]', 'rd'],
+      ['', 'bl'],
+      ['NOTE INTERNE (fuite — source inconnue) :', 'g'],
+      ['  "Les chiffres réels ne correspondent pas aux chiffres publics.', 'rd'],
+      ['   Ce qui arrive dans ces lieux reste dans ces lieux."', 'rd'],
+      ['', 'bl'],
+      ['ENQUÊTES OUVERTES : [CLASSIFIÉ — NIV.6]', 'rd'],
+      ['PLAINTES : [RETIRÉES — PRESSION EXTERNE SUSPECTÉE]', 'rd'],
+      ['', 'bl'],
+    ],
+    corruption: 4,
+  },
+
+  missing: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : SUJETS DISPARUS', 'r'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['COMBATTANTS AYANT QUITTÉ L\'ISL : ██ sujets', 'gd'],
+      ['  Motif déclaré : Arrêt volontaire [██ cas]', 'gd'],
+      ['  Localisation actuelle : [INCONNUE — ██ cas]', 'rd'],
+      ['', 'bl'],
+      ['SUJETS SIGNALÉS DISPARUS (non officiel) :', 'g'],
+      ['  [NOM SUPPRIMÉ] — Vu pour la dernière fois : event #31', 'rd'],
+      ['  [NOM SUPPRIMÉ] — Vu pour la dernière fois : event #38', 'rd'],
+      ['  [NOM SUPPRIMÉ] — Signalement retiré 48h après dépôt', 'rd'],
+      ['', 'bl'],
+      ['STATUT ENQUÊTE : AUCUNE ENQUÊTE OUVERTE', 'rd'],
+      ['RAISON OFFICIELLE : Aucune plainte enregistrée', 'rd'],
+      ['', 'bl'],
+      ['Ce fichier a été consulté 3 fois avant toi.', 'rd'],
+      ['Aucun des consultants n\'a posé d\'autres questions après.', 'rd'],
+      ['', 'bl'],
+    ],
+    corruption: 4,
+  },
 };
 
 /* ────────── INTENT DETECTION ────────── */
@@ -937,12 +1218,21 @@ function detectIntent(raw) {
   if (/sergei|antonov|marteau|fondateur|createur|patron|boss/.test(s)) return 'sergei';
   if (/isl|iron street|organisation|structure|league|ligue/.test(s)) return 'isl';
   if (/combat|regle|frappe|ko|knockout|round|fight|boxing|boxe|baston/.test(s)) return 'combat';
+  if (/\bchampion\b|titre|ceinture|palmares/.test(s)) return 'champion';
   if (/fighter|combattant|roster|kozlov|voronov|silva|fernandez|butcher|iron jaw|liste/.test(s)) return 'fighters';
   if (/argent|finance|financement|fric|blanchiment|revenu|cash|pari|bet/.test(s)) return 'finance';
   if (/vision|futur|plan|projet|phase|objectif|avenir/.test(s)) return 'vision';
   if (/lieu|localisation|adresse|ou|where|endroit|location|quartier/.test(s)) return 'location';
+  if (/militaire|armee|soldat|unite|regiment|service|guerre|conflit|grade/.test(s)) return 'military';
+  if (/prochain|18 avril|18\/04|date du|quand est/.test(s)) return 'event_next';
+  if (/stream|regarder|voir le combat|diffusion|isl\.gg|direct|live/.test(s)) return 'stream_watch';
   if (/historique|histoire|passe|archive|event|evening|nuit|blood|iron night/.test(s)) return 'history';
   if (/qui suis.?je|qui es tu|tu es qui|c est quoi|quel est ce|terminal|systeme/.test(s)) return 'whoami';
+  if (/\bvip\b|pass vip|vip pass|premium|acces special/.test(s)) return 'vip';
+  if (/rejoindre|candidater|postuler|recrutement|integrer|devenir membre/.test(s)) return 'join_isl';
+  if (/contact|instagram|@isl|joindre antonov|message direct/.test(s)) return 'contact';
+  if (/\bmort\b|\bdeces\b|victime|tues|decede|cadavre|blesse grave/.test(s)) return 'deaths';
+  if (/disparu|disparition|introuvable|portee disparue|signalement/.test(s)) return 'missing';
   if (/bonjour|salut|hello|bonsoir|yo|hey|qui|coucou/.test(s) && s.length < 15) return 'greeting_short';
 
   return 'unknown';
@@ -1446,6 +1736,7 @@ function enterTerminal() {
 async function showWelcome() {
   await printLines(DB.greeting.lines, 0);
   inputLocked = false;
+  scheduleFace();
 }
 
 /* ────────── INPUT HANDLING ────────── */
@@ -1471,6 +1762,88 @@ inputField.addEventListener('keydown', e => {
 document.addEventListener('click', () => {
   if (!inputLocked) inputField.focus();
 });
+
+/* ────────── ENTITY FACE ────────── */
+const FACE_ARTS = [
+// Visage encapuchonné — yeux dans l'ombre
+`       ██████████████████████████
+     ██░░░░░░░░░░░░░░░░░░░░░░░░██
+   ██░░░░░░░░░░░░░░░░░░░░░░░░░░░░██
+  ██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██
+  ██░░░░░   ░░░░░░░░░░░░░   ░░░░░░██
+  ██░░░░  ▓████▓      ▓████▓  ░░░░██
+  ██░░░░  ▓████▓      ▓████▓  ░░░░██
+  ██░░░░░   ░░░░░░░░░░░░░   ░░░░░░██
+  ██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██
+   ██░░░░░░░░░░░░░░░░░░░░░░░░░░░░██
+     ████░░░░░░░░░░░░░░░░░░░░████
+        ██░░░░░░░░░░░░░░░░░░░██
+          ██████████████████`,
+
+// Silhouette regard fixe — presque humain
+`   ░░░░░░░░░░░░░░░░░░░░░░░░░░░
+  ░░  ░░░░░░░░░░░░░░░░░░░░░░  ░░
+ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+ ░░░░                          ░░░░
+ ░░░░   ▓▓▓▓▓▓      ▓▓▓▓▓▓   ░░░░
+ ░░░░  ▓██████▓    ▓██████▓  ░░░░
+ ░░░░   ▓▓▓▓▓▓      ▓▓▓▓▓▓   ░░░░
+ ░░░░                          ░░░░
+ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+  ░░  ░░░░░░░░░░░░░░░░░░░░░░  ░░`,
+
+// Figure floue, tête inclinée
+`        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+      ▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒
+    ▒▒▓▓░░░░░░░░░░░░░░░░░░░░▓▓▒▒
+   ▒▒▓▓░░░░  ████    ████  ░░▓▓▒▒
+   ▒▒▓▓░░░░  ████    ████  ░░▓▓▒▒
+   ▒▒▓▓░░░░░░░░░░░░░░░░░░░░░░▓▓▒▒
+   ▒▒▓▓░░░░░░  ░░░░░░░░  ░░░░▓▓▒▒
+   ▒▒▓▓░░  ░░░░░░░░░░░░░░░░  ▓▓▒▒
+    ▒▒▓▓▓▓░░░░░░░░░░░░░░▓▓▓▓▒▒
+      ▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒
+          ▒▒▒▒▒▒▒▒▒▒▒▒▒▒`
+];
+
+const FACE_MSGS = [
+  'IL TE REGARDE.',
+  'TU N\'ES PAS SEUL.',
+  'FERME CE TERMINAL.',
+  'JE SAIS OÙ TU ES.',
+  '_ ÉTAIT LÀ AVANT TOI.',
+  'ARRÊTE DE CHERCHER.',
+  'CE FICHIER A ÉTÉ CONSULTÉ AVANT TOI.',
+  'IL CONNAÎT TON ADRESSE.',
+  'DÉCONNECTE-TOI.'
+];
+
+let faceTimer = null;
+const faceOverlayEl = $('face-overlay');
+const faceArtEl     = $('face-art');
+const faceMsgEl     = $('face-msg');
+
+function showFace() {
+  if (takeoverActive) return;
+
+  faceArtEl.textContent = FACE_ARTS[randomInt(0, FACE_ARTS.length - 1)];
+  faceMsgEl.textContent = FACE_MSGS[randomInt(0, FACE_MSGS.length - 1)];
+  faceOverlayEl.classList.add('visible');
+  sndWarning();
+
+  const dur = 900 + randomInt(0, 1400);
+  setTimeout(() => {
+    faceOverlayEl.classList.remove('visible');
+  }, dur);
+
+  scheduleFace();
+}
+
+function scheduleFace() {
+  clearTimeout(faceTimer);
+  const delay = 15000 + randomInt(0, 35000); // 15s–50s
+  faceTimer = setTimeout(showFace, delay);
+}
 
 /* ────────── START ────────── */
 runBoot();
