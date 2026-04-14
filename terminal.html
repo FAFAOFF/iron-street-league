@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISL // TERMINAL SÉCURISÉ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000;
+    --grn: #00ff41;
+    --grn-dim: #00aa2a;
+    --grn-dark: #003a0e;
+    --red: #cc1111;
+    --red-dim: #880808;
+    --gold: #d4a017;
+    --warn: #ff8800;
+    --font-m: 'IBM Plex Mono', monospace;
+    --font-d: 'Bebas Neue', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--grn);
+    font-family: var(--font-m);
+    font-size: 13px;
+    height: 100%;
+    overflow: hidden;
+    cursor: default;
+  }
+
+  /* SCANLINES */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.18) 2px,
+      rgba(0,0,0,0.18) 4px
+    );
+    pointer-events: none;
+    z-index: 9000;
+  }
+
+  /* VIGNETTE */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.85) 100%);
+    pointer-events: none;
+    z-index: 9001;
+  }
+
+  /* FAKE CURSOR */
+  #fake-cursor {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+    transform: translate(-50%, -50%);
+  }
+  #fake-cursor::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--red);
+    clip-path: polygon(0 0, 50% 100%, 50% 65%, 100% 50%);
+  }
+
+  /* BOOT SCREEN */
+  #boot {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 8000;
+    background: var(--bg);
+    padding: 40px;
+  }
+  #boot-lines {
+    width: 600px;
+    max-width: 100%;
+  }
+  .boot-line {
+    font-family: var(--font-m);
+    font-size: 13px;
+    color: var(--grn-dim);
+    line-height: 1.8;
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .boot-line.ok { color: var(--grn); }
+  .boot-line.err { color: var(--red); }
+  .boot-line.warn { color: var(--warn); }
+  #boot-bar-wrap {
+    width: 600px;
+    max-width: 100%;
+    margin-top: 24px;
+    display: none;
+  }
+  #boot-bar-label {
+    font-size: 11px;
+    color: var(--grn-dim);
+    margin-bottom: 6px;
+    letter-spacing: 0.2em;
+  }
+  #boot-bar-track {
+    height: 3px;
+    background: var(--grn-dark);
+    position: relative;
+    overflow: hidden;
+  }
+  #boot-bar-fill {
+    height: 100%;
+    background: var(--grn);
+    width: 0%;
+    transition: width 0.05s linear;
+    box-shadow: 0 0 8px var(--grn);
+  }
+  #boot-enter {
+    margin-top: 32px;
+    font-family: var(--font-d);
+    font-size: 22px;
+    letter-spacing: 0.25em;
+    color: var(--red);
+    cursor: pointer;
+    border: 1px solid var(--red);
+    padding: 12px 40px;
+    background: transparent;
+    display: none;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    text-shadow: 0 0 8px var(--red);
+    box-shadow: 0 0 12px rgba(204,17,17,0.3);
+  }
+  #boot-enter:hover {
+    background: var(--red);
+    color: #000;
+    box-shadow: 0 0 30px var(--red);
+    cursor: pointer;
+  }
+
+  /* MAIN TERMINAL */
+  #main {
+    display: none;
+    position: fixed;
+    inset: 0;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  #term-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--grn-dark);
+    background: rgba(0,255,65,0.03);
+    flex-shrink: 0;
+  }
+  #term-title {
+    font-family: var(--font-d);
+    font-size: 18px;
+    letter-spacing: 0.2em;
+    color: var(--grn);
+  }
+  #term-status {
+    font-size: 11px;
+    color: var(--grn-dim);
+    display: flex;
+    gap: 20px;
+  }
+  #ip-display { color: var(--grn-dim); }
+  #intrusion-display { color: var(--grn); }
+  #loc-display { color: var(--grn-dim); }
+
+  /* CLOSE BAR BUTTON */
+  #close-bar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 46px;
+    height: 32px;
+    background: #2d2d2d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #ccc;
+    z-index: 100;
+    transition: background 0.15s;
+  }
+  #close-bar-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 0%;
+    background: var(--red);
+    transition: width 0.3s ease;
+  }
+
+  /* OUTPUT */
+  #output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--grn-dark) transparent;
+  }
+  #output::-webkit-scrollbar { width: 4px; }
+  #output::-webkit-scrollbar-track { background: transparent; }
+  #output::-webkit-scrollbar-thumb { background: var(--grn-dark); }
+
+  .line {
+    display: block;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .line.g  { color: var(--grn); }
+  .line.gd { color: var(--grn-dim); }
+  .line.r  { color: var(--red); }
+  .line.rd { color: var(--red-dim); }
+  .line.go { color: var(--gold); }
+  .line.w  { color: var(--warn); }
+  .line.bl { color: transparent; user-select: none; }
+  .line.sep { color: var(--grn-dark); }
+  .line.sys { color: #555; font-size: 11px; }
+
+  /* Glitch text */
+  .glitch-text {
+    animation: glitch-small 0.15s steps(2) infinite;
+  }
+  @keyframes glitch-small {
+    0%   { clip-path: inset(30% 0 60% 0); transform: translateX(-2px); }
+    50%  { clip-path: inset(70% 0 5%  0); transform: translateX(2px); }
+    100% { clip-path: none; transform: none; }
+  }
+
+  /* INPUT AREA */
+  #input-wrap {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-top: 1px solid var(--grn-dark);
+    flex-shrink: 0;
+    background: rgba(0,255,65,0.02);
+    gap: 8px;
+  }
+  #prompt-label {
+    color: var(--grn);
+    white-space: nowrap;
+    font-size: 13px;
+  }
+  #input-field {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--grn);
+    font-family: var(--font-m);
+    font-size: 13px;
+    caret-color: var(--grn);
+    cursor: text;
+  }
+  #input-field::placeholder { color: var(--grn-dark); }
+
+  /* INTRUSION METER */
+  #meter-wrap {
+    padding: 6px 20px 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  #meter-label {
+    font-size: 10px;
+    color: var(--grn-dim);
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+  }
+  #meter-track {
+    flex: 1;
+    height: 2px;
+    background: var(--grn-dark);
+    position: relative;
+  }
+  #meter-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--grn);
+    transition: width 0.4s ease, background 0.4s ease;
+    box-shadow: 0 0 6px var(--grn);
+  }
+  #meter-val {
+    font-size: 10px;
+    color: var(--grn-dim);
+    width: 30px;
+    text-align: right;
+  }
+
+  /* TAKEOVER OVERLAY */
+  #takeover {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 7000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  #tko-msg {
+    font-family: var(--font-d);
+    font-size: 28px;
+    color: var(--red);
+    letter-spacing: 0.2em;
+    text-align: center;
+    text-shadow: 0 0 20px var(--red);
+    margin-bottom: 24px;
+    min-height: 80px;
+  }
+  #countdown-display {
+    font-family: var(--font-d);
+    font-size: 72px;
+    color: var(--red);
+    text-shadow: 0 0 40px var(--red), 0 0 80px rgba(204,17,17,0.4);
+    margin-bottom: 30px;
+    display: none;
+  }
+  #override-wrap {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  #override-label {
+    font-size: 11px;
+    color: var(--warn);
+    letter-spacing: 0.3em;
+  }
+  #override-input {
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    font-family: var(--font-m);
+    font-size: 18px;
+    text-align: center;
+    padding: 10px 24px;
+    outline: none;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    cursor: text;
+    width: 300px;
+    caret-color: var(--red);
+  }
+
+  /* REBOOT OVERLAY */
+  #reboot {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 8500;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  #reboot-msg {
+    font-family: var(--font-m);
+    font-size: 13px;
+    color: var(--red);
+    line-height: 1.8;
+    text-align: center;
+    max-width: 500px;
+  }
+  #reboot-restart {
+    margin-top: 40px;
+    font-family: var(--font-d);
+    font-size: 18px;
+    letter-spacing: 0.3em;
+    color: var(--grn-dim);
+    cursor: pointer;
+    border: 1px solid var(--grn-dark);
+    padding: 10px 30px;
+    background: transparent;
+    display: none;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  #reboot-restart:hover {
+    color: var(--grn);
+    border-color: var(--grn);
+    cursor: pointer;
+  }
+
+  /* GLITCH FLASH */
+  @keyframes page-glitch {
+    0%   { transform: translateX(0); filter: none; }
+    25%  { transform: translateX(-4px) skewX(-1deg); filter: hue-rotate(90deg); }
+    50%  { transform: translateX(4px); filter: hue-rotate(-90deg) brightness(1.5); }
+    75%  { transform: translateX(-2px) skewX(0.5deg); filter: none; }
+    100% { transform: translateX(0); filter: none; }
+  }
+  .page-glitch { animation: page-glitch 0.12s steps(3) forwards; }
+
+  /* BORDER PULSE */
+  @keyframes border-pulse {
+    0%, 100% { box-shadow: inset 0 0 0 1px var(--red-dim); }
+    50%       { box-shadow: inset 0 0 0 1px var(--red), inset 0 0 20px rgba(204,17,17,0.15); }
+  }
+  #main.alert { animation: border-pulse 0.8s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<!-- FAKE CURSOR -->
+<div id="fake-cursor"></div>
+
+<!-- CLOSE BAR BUTTON (visual only) -->
+<div id="close-bar">
+  ×
+  <div id="close-bar-progress"></div>
+</div>
+
+<!-- BOOT SCREEN -->
+<div id="boot">
+  <div id="boot-lines"></div>
+  <div id="boot-bar-wrap">
+    <div id="boot-bar-label">INITIALISATION DU PROTOCOLE DE CHIFFREMENT...</div>
+    <div id="boot-bar-track"><div id="boot-bar-fill"></div></div>
+  </div>
+  <button id="boot-enter" onclick="enterTerminal()">ACCÉDER AU TERMINAL</button>
+</div>
+
+<!-- MAIN TERMINAL -->
+<div id="main">
+  <div id="term-header">
+    <div id="term-title">ISL // TERMINAL SÉCURISÉ v4.7</div>
+    <div id="term-status">
+      <span>IP : <span id="ip-display">---</span></span>
+      <span>LOC : <span id="loc-display">---</span></span>
+      <span>INTRUSION : <span id="intrusion-display">NIV.0</span></span>
+    </div>
+  </div>
+
+  <div id="output"></div>
+
+  <div id="meter-wrap">
+    <span id="meter-label">INTRUSION</span>
+    <div id="meter-track"><div id="meter-fill"></div></div>
+    <span id="meter-val">0/8</span>
+  </div>
+
+  <div id="input-wrap">
+    <span id="prompt-label">root@ISL-SEC &gt;</span>
+    <input type="text" id="input-field" placeholder="tapez une commande ou une question..." autocomplete="off" spellcheck="false">
+  </div>
+</div>
+
+<!-- TAKEOVER OVERLAY -->
+<div id="takeover">
+  <div id="tko-msg"></div>
+  <div id="countdown-display">15</div>
+  <div id="override-wrap">
+    <span id="override-label">TAPEZ "OVERRIDE" POUR REPRENDRE LE CONTRÔLE</span>
+    <input type="text" id="override-input" placeholder="OVERRIDE" autocomplete="off" spellcheck="false">
+  </div>
+</div>
+
+<!-- REBOOT OVERLAY -->
+<div id="reboot">
+  <div id="reboot-msg"></div>
+  <button id="reboot-restart" onclick="location.reload()">REDÉMARRER</button>
+</div>
+
+<script>
+'use strict';
+
+/* ────────── UTILS ────────── */
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789█▓▒░@#$%&';
+function scramble(text, ratio) {
+  return text.split('').map(c => {
+    if (c === ' ' || c === '\n') return c;
+    return Math.random() < ratio ? GLITCH_CHARS[randomInt(0, GLITCH_CHARS.length - 1)] : c;
+  }).join('');
+}
+
+/* ────────── AUDIO ────────── */
+let ctx = null;
+let masterGain = null;
+let noiseSource = null;
+
+function initAudio() {
+  if (ctx) return;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = ctx.createGain();
+  masterGain.gain.setValueAtTime(0.0, ctx.currentTime);
+  masterGain.connect(ctx.destination);
+
+  // Dark sub-bass drone
+  const osc1 = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  const droneGain = ctx.createGain();
+  osc1.frequency.value = 32;
+  osc2.frequency.value = 34.3;
+  droneGain.gain.value = 0.5;
+  osc1.connect(droneGain);
+  osc2.connect(droneGain);
+  droneGain.connect(masterGain);
+  osc1.start();
+  osc2.start();
+
+  // LFO tremolo
+  const lfo = ctx.createOscillator();
+  const lfoGain = ctx.createGain();
+  lfo.frequency.value = 0.07;
+  lfoGain.gain.value = 0.15;
+  lfo.connect(lfoGain);
+  lfoGain.connect(droneGain.gain);
+  lfo.start();
+
+  // Noise
+  const bufSize = ctx.sampleRate * 3;
+  const noiseBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const d = noiseBuf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) d[i] = (Math.random() * 2 - 1) * 0.04;
+  noiseSource = ctx.createBufferSource();
+  noiseSource.buffer = noiseBuf;
+  noiseSource.loop = true;
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'bandpass';
+  noiseFilter.frequency.value = 400;
+  noiseFilter.Q.value = 0.4;
+  noiseSource.connect(noiseFilter);
+  noiseFilter.connect(masterGain);
+  noiseSource.start();
+
+  masterGain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + 3);
+}
+
+function sndClick() {
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.frequency.value = 1200;
+  g.gain.setValueAtTime(0.2, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+  osc.connect(g); g.connect(ctx.destination);
+  osc.start(); osc.stop(ctx.currentTime + 0.06);
+}
+
+function sndWarning() {
+  if (!ctx) return;
+  [600, 800].forEach((f, i) => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.frequency.value = f;
+    g.gain.setValueAtTime(0.25, ctx.currentTime + i * 0.18);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.18 + 0.15);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(ctx.currentTime + i * 0.18);
+    osc.stop(ctx.currentTime + i * 0.18 + 0.15);
+  });
+}
+
+function sndAlarm() {
+  if (!ctx) return;
+  for (let i = 0; i < 4; i++) {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.value = i % 2 === 0 ? 440 : 330;
+    g.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.2);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.2 + 0.18);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(ctx.currentTime + i * 0.2);
+    osc.stop(ctx.currentTime + i * 0.2 + 0.18);
+  }
+}
+
+function sndTick() {
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.frequency.value = 880;
+  g.gain.setValueAtTime(0.15, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+  osc.connect(g); g.connect(ctx.destination);
+  osc.start(); osc.stop(ctx.currentTime + 0.04);
+}
+
+function sndOverrideSuccess() {
+  if (!ctx) return;
+  [523, 659, 784].forEach((f, i) => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.frequency.value = f;
+    g.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.1);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.25);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(ctx.currentTime + i * 0.1);
+    osc.stop(ctx.currentTime + i * 0.1 + 0.25);
+  });
+}
+
+function sndReboot() {
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.frequency.setValueAtTime(200, ctx.currentTime);
+  osc.frequency.linearRampToValueAtTime(20, ctx.currentTime + 1.5);
+  g.gain.setValueAtTime(0.4, ctx.currentTime);
+  g.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5);
+  osc.connect(g); g.connect(ctx.destination);
+  osc.start(); osc.stop(ctx.currentTime + 1.5);
+}
+
+/* ────────── STATE ────────── */
+let intrusionLevel = 0;
+let inputLocked = false;
+let takeoverActive = false;
+let historyBuf = [];
+let historyIdx = -1;
+let queries = 0;
+const INTRUSION_MAX = 8;
+let meterThrottleId = null;
+
+/* ────────── RESPONSE DB ────────── */
+const DB = {
+  greeting: {
+    lines: [
+      ['', 'bl'],
+      ['TERMINAL ISL — SYSTÈME SÉCURISÉ', 'g'],
+      ['ACCÈS RESTREINT — NIVEAU 5 CONFIDENTIEL', 'r'],
+      ['', 'bl'],
+      ['Ce terminal vous permet d\'interroger la base de données ISL.', 'gd'],
+      ['Posez vos questions en langage naturel.', 'gd'],
+      ['Tapez /help pour la liste des sujets disponibles.', 'gd'],
+      ['', 'bl'],
+      ['AVERTISSEMENT : Toute tentative d\'intrusion sera tracée.', 'w'],
+      ['', 'bl'],
+    ],
+    corruption: 0,
+  },
+  help: {
+    lines: [
+      ['', 'bl'],
+      ['SUJETS INTERROGEABLES :', 'g'],
+      ['  • SERGEI / ANTONOV — Identité du fondateur', 'gd'],
+      ['  • ISL / ORGANISATION — Structure générale', 'gd'],
+      ['  • COMBAT / RÈGLES — Protocoles de combat', 'gd'],
+      ['  • FIGHTERS / COMBATTANTS — Roster actif', 'gd'],
+      ['  • FINANCEMENT / ARGENT — Sources de revenus', 'gd'],
+      ['  • VISION / FUTUR — Plans de l\'organisation', 'gd'],
+      ['  • LOCALISATION / LIEU — Coordonnées des events', 'gd'],
+      ['  • HISTORIQUE / PASSÉ — Archives des events', 'gd'],
+      ['  • QUI SUIS-JE — Informations sur vous', 'gd'],
+      ['', 'bl'],
+      ['COMMANDES SYSTÈME :', 'g'],
+      ['  • /clear — Effacer le terminal', 'gd'],
+      ['  • /exit — Fermer la session', 'gd'],
+      ['', 'bl'],
+    ],
+    corruption: 0,
+  },
+  sergei: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : ANTONOV, SERGEI', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['NOM COMPLET  : ANTONOV, SERGEI NIKOLAEVICH', 'g'],
+      ['ALIAS        : "LE MARTEAU"', 'go'],
+      ['ÂGE ESTIMÉ   : 38-42 ans', 'gd'],
+      ['ORIGINE      : [DONNÉES CHIFFRÉES]', 'rd'],
+      ['STATUT       : FONDATEUR & OPÉRATEUR PRINCIPAL', 'g'],
+      ['', 'bl'],
+      ['PROFIL PSYCHOLOGIQUE :', 'g'],
+      ['  Sujet présentant un profil de leadership atypique.', 'gd'],
+      ['  Logique de domination totale. Absence de compromis.', 'gd'],
+      ['  Calme en surface. Calculé. Prévisible dans son imprévisibilité.', 'gd'],
+      ['', 'bl'],
+      ['COMPÉTENCES CONFIRMÉES :', 'g'],
+      ['  ██ CQB — Combat rapproché [EXCEPTIONNEL]', 'go'],
+      ['  ██ Psychologie de terrain [EXCEPTIONNEL]', 'go'],
+      ['  ██ Gestion de réseau criminel [CONFIRMÉ]', 'g'],
+      ['  ██ Neutralisation de menaces internes [CONFIRMÉ]', 'g'],
+      ['', 'bl'],
+      ['PASSÉ MILITAIRE : [ACCÈS REFUSÉ — NIV.7 REQUIS]', 'rd'],
+      ['LOCALISATION ACTUELLE : [SUIVI IMPOSSIBLE]', 'rd'],
+      ['', 'bl'],
+    ],
+    corruption: 2,
+  },
+  isl: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : ISL / ORGANISATION', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['DÉSIGNATION   : IRON STREET LEAGUE', 'g'],
+      ['ACRONYME      : I.S.L.', 'g'],
+      ['TYPE          : Organisation de combat clandestin', 'gd'],
+      ['ZONE          : Los Santos, FLASHFA RP', 'gd'],
+      ['FONDATION     : [DATE EFFACÉE]', 'rd'],
+      ['', 'bl'],
+      ['STRUCTURE INTERNE :', 'g'],
+      ['  NIVEAU 0 — Fondateur unique  : ANTONOV', 'go'],
+      ['  NIVEAU 1 — Lieutenants       : [CLASSIFIÉ]', 'rd'],
+      ['  NIVEAU 2 — Combattants actifs : 23 sujets recensés', 'gd'],
+      ['  NIVEAU 3 — Réseau support    : inconnu', 'rd'],
+      ['', 'bl'],
+      ['PHILOSOPHIE OPÉRATIONNELLE :', 'g'],
+      ['  Pas de rounds. Pas d\'arbitre. Pas de pitié.', 'gd'],
+      ['  Le combat s\'arrête quand un corps ne se relève plus.', 'gd'],
+      ['', 'bl'],
+      ['ACTIVITÉ TOTALE : 47 combats organisés', 'g'],
+      ['BLESSÉS GRAVES : [DONNÉES SUPPRIMÉES]', 'rd'],
+      ['', 'bl'],
+    ],
+    corruption: 1,
+  },
+  combat: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : PROTOCOLES DE COMBAT', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['FORMAT         : Bare knuckle. Pas de rounds.', 'g'],
+      ['DURÉE          : Fight to finish — aucune limite de temps', 'go'],
+      ['LIEU           : Locations secrètes, rotatives', 'gd'],
+      ['', 'bl'],
+      ['CONDITIONS DE VICTOIRE :', 'g'],
+      ['  KO    — L\'adversaire est inconscient au sol.', 'gd'],
+      ['  TKO   — Abandon ou incapacité à continuer.', 'gd'],
+      ['  SOUMISSION — L\'adversaire tourne les pouces.', 'gd'],
+      ['', 'bl'],
+      ['INTERDICTIONS (les seules) :', 'g'],
+      ['  Morsures — Coups aux yeux — Attaques sur arbitre', 'rd'],
+      ['  Toute autre technique : autorisée.', 'w'],
+      ['', 'bl'],
+      ['NOTE : L\'ISL n\'a pas d\'arbitre au sens classique.', 'gd'],
+      ['Antonov décide personnellement de l\'arrêt du combat.', 'gd'],
+      ['', 'bl'],
+    ],
+    corruption: 1,
+  },
+  fighters: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : ROSTER ISL', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['COMBATTANTS ACTIFS RECENSÉS : 23', 'g'],
+      ['', 'bl'],
+      ['SUJET PRIORITAIRE #01 :', 'go'],
+      ['  KOZLOV, VASIL "THE BUTCHER" — 9-1-0 — CHAMPION', 'go'],
+      ['  Profil : Destructeur. 8 KO. Aucune pitié.', 'gd'],
+      ['', 'bl'],
+      ['SUJET PRIORITAIRE #02 :', 'g'],
+      ['  VORONOV, DIMITRI "IRON JAW" — 6-0-1 — CHALLENGER', 'g'],
+      ['  Profil : Indestructible. N\'a jamais été KO.', 'gd'],
+      ['', 'bl'],
+      ['AUTRES COMBATTANTS :', 'g'],
+      ['  SILVA, MARCOS — 5-2-0', 'gd'],
+      ['  FERNANDEZ, TONY — 4-1-0', 'gd'],
+      ['  [19 AUTRES DOSSIERS — ACCÈS PARTIEL REFUSÉ]', 'rd'],
+      ['', 'bl'],
+      ['RECRUTEMENT : Sur invitation uniquement.', 'gd'],
+      ['DÉSÉLECTION : [MÉTHODE CLASSIFIÉE]', 'rd'],
+      ['', 'bl'],
+    ],
+    corruption: 2,
+  },
+  finance: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : FINANCEMENT ISL', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['SOURCES CONFIRMÉES :', 'g'],
+      ['  Paris clandestins    — part variable [ESTIMÉE : 40%]', 'gd'],
+      ['  Droits de diffusion  — stream live exclusif', 'gd'],
+      ['  VIP Pass spectateurs — accès premium events', 'gd'],
+      ['', 'bl'],
+      ['SOURCES SUSPECTÉES :', 'g'],
+      ['  Blanchiment de capitaux    — [NON CONFIRMÉ]', 'rd'],
+      ['  Réseau criminel externe    — [ENQUÊTE EN COURS]', 'rd'],
+      ['  Racket de protection       — [DONNÉES EFFACÉES]', 'rd'],
+      ['', 'bl'],
+      ['MONTANTS TOTAUX : [CHIFFRES INACCESSIBLES — NIV.6]', 'rd'],
+      ['', 'bl'],
+      ['NOTE : L\'ISL génère suffisamment pour rester autonome.', 'gd'],
+      ['Aucune dépendance extérieure identifiée.', 'gd'],
+      ['', 'bl'],
+    ],
+    corruption: 3,
+  },
+  vision: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : PROJECTIONS ISL', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['PHASE 1 — ÉTABLISSEMENT [COMPLÉTÉE]', 'g'],
+      ['  Création du réseau. Premiers combats. Réputation.', 'gd'],
+      ['', 'bl'],
+      ['PHASE 2 — EXPANSION [EN COURS]', 'go'],
+      ['  Extension géographique. Recrutement actif.', 'gd'],
+      ['  Augmentation de la fréquence des events.', 'gd'],
+      ['', 'bl'],
+      ['PHASE 3 — [ACCÈS INTERDIT — CLASSIFICATION MAXIMALE]', 'r'],
+      ['  ████████████████████████████████████████████', 'rd'],
+      ['  ████████████████████████████████████████████', 'rd'],
+      ['  AVERTISSEMENT : Consultation non autorisée tracée.', 'r'],
+      ['', 'bl'],
+      ['DÉCLARATION D\'ANTONOV (interceptée) :', 'g'],
+      ['  "Les règles sont faites pour ceux qui ont peur de perdre.', 'go'],
+      ['   Nous, on joue pour gagner. Toujours."', 'go'],
+      ['', 'bl'],
+    ],
+    corruption: 3,
+  },
+  location: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : LOCALISATION', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['LOCALISATION DES EVENTS : VARIABLE', 'go'],
+      ['  Les lieux sont communiqués 1h avant l\'event.', 'gd'],
+      ['  Changement systématique pour éviter le suivi.', 'gd'],
+      ['', 'bl'],
+      ['DERNIÈRE LOCALISATION CONNUE :', 'g'],
+      ['  [DONNÉES PURGÉES]', 'rd'],
+      ['', 'bl'],
+      ['LOCALISATION D\'ANTONOV :', 'g'],
+      ['  [SUIVI IMPOSSIBLE — BROUILLAGE ACTIF]', 'rd'],
+      ['  [DERNIÈRE POSITION : LOS SANTOS — SECTEUR SUD]', 'rd'],
+      ['', 'bl'],
+      ['QUARTIER GÉNÉRAL ISL : INCONNU', 'rd'],
+      ['TENTATIVES DE LOCALISATION : 14 — TOUTES ÉCHOUÉES', 'rd'],
+      ['', 'bl'],
+    ],
+    corruption: 2,
+  },
+  history: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : HISTORIQUE ISL', 'g'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['TOTAL EVENTS ORGANISÉS : 47', 'g'],
+      ['', 'bl'],
+      ['EVENTS MAJEURS DOCUMENTÉS :', 'g'],
+      ['  NIGHT OF BLOOD I   — Premier event public ISL', 'gd'],
+      ['  NIGHT OF BLOOD II  — 3 hospitalizations [CLASSIFIÉ]', 'rd'],
+      ['  IRON NIGHT I       — Introduction du format KO-only', 'gd'],
+      ['  BLOOD TOURNAMENT   — 8 combattants, 1 survivant invaincu', 'go'],
+      ['', 'bl'],
+      ['PROCHAIN EVENT :', 'g'],
+      ['  NIGHT OF BLOOD III — Date : 18/04/2026', 'go'],
+      ['  Main event : KOZLOV vs. VORONOV', 'go'],
+      ['', 'bl'],
+      ['INCIDENTS NON RÉSOLUS : [DONNÉES RETIRÉES]', 'rd'],
+      ['PLAINTES DÉPOSÉES : [CLASSIFIÉ — NIV.5]', 'rd'],
+      ['', 'bl'],
+    ],
+    corruption: 1,
+  },
+  whoami: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE TRAITÉE — SUJET : VOUS', 'r'],
+      ['━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sep'],
+      ['IDENTIFICATION EN COURS...', 'w'],
+      ['', 'bl'],
+      ['ADRESSE IP       : EN COURS DE TRAÇAGE...', 'w'],
+      ['FOURNISSEUR      : EN COURS...', 'w'],
+      ['LOCALISATION     : EN COURS...', 'w'],
+      ['', 'bl'],
+      ['PROFIL COMPORTEMENTAL :', 'g'],
+      ['  Curiosité excessive détectée.', 'gd'],
+      ['  Niveau d\'intérêt : SUSPECT', 'r'],
+      ['  Menace potentielle : ÉVALUÉE', 'r'],
+      ['', 'bl'],
+      ['NOTE INTERNE :', 'g'],
+      ['  Ce terminal enregistre tout.', 'rd'],
+      ['  Antonov sera informé de cette consultation.', 'rd'],
+      ['  Il n\'oublie jamais.', 'r'],
+      ['', 'bl'],
+    ],
+    corruption: 4,
+  },
+  unknown: {
+    lines: [
+      ['', 'bl'],
+      ['REQUÊTE NON RECONNUE.', 'w'],
+      ['Les données demandées ne correspondent à aucun sujet connu.', 'gd'],
+      ['Tapez /help pour la liste des sujets disponibles.', 'gd'],
+      ['', 'bl'],
+    ],
+    corruption: 0,
+  },
+  exit: {
+    lines: [
+      ['', 'bl'],
+      ['FERMETURE DE SESSION...', 'r'],
+      ['DÉCONNEXION EN COURS...', 'rd'],
+      ['', 'bl'],
+    ],
+    corruption: 0,
+  },
+};
+
+/* ────────── INTENT DETECTION ────────── */
+function detectIntent(raw) {
+  const s = raw.toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .trim();
+
+  if (/^\/(exit|quit|logout|deconnect)/.test(s)) return 'exit';
+  if (/^\/clear/.test(s)) return '__clear';
+  if (/^\/help/.test(s) || s === 'help' || s === 'aide') return 'help';
+
+  if (/sergei|antonov|marteau|fondateur|createur|patron|boss/.test(s)) return 'sergei';
+  if (/isl|iron street|organisation|structure|league|ligue/.test(s)) return 'isl';
+  if (/combat|regle|frappe|ko|knockout|round|fight|boxing|boxe|baston/.test(s)) return 'combat';
+  if (/fighter|combattant|roster|kozlov|voronov|silva|fernandez|butcher|iron jaw|liste/.test(s)) return 'fighters';
+  if (/argent|finance|financement|fric|blanchiment|revenu|cash|pari|bet/.test(s)) return 'finance';
+  if (/vision|futur|plan|projet|phase|objectif|avenir/.test(s)) return 'vision';
+  if (/lieu|localisation|adresse|ou|where|endroit|location|quartier/.test(s)) return 'location';
+  if (/historique|histoire|passe|archive|event|evening|nuit|blood|iron night/.test(s)) return 'history';
+  if (/qui suis.?je|qui es tu|tu es qui|c est quoi|quel est ce|terminal|systeme/.test(s)) return 'whoami';
+  if (/bonjour|salut|hello|bonsoir|yo|hey|qui|coucou/.test(s) && s.length < 15) return 'greeting_short';
+
+  return 'unknown';
+}
+
+/* ────────── OUTPUT HELPERS ────────── */
+const out = $('output');
+
+function createLine(text, cls) {
+  const span = document.createElement('span');
+  span.className = 'line ' + cls;
+  span.textContent = text;
+  return span;
+}
+
+async function printLine(text, cls, delay = 18) {
+  if (delay > 0) await sleep(delay);
+  out.appendChild(createLine(text, cls));
+  out.scrollTop = out.scrollHeight;
+}
+
+async function printLines(lines, corruption, extra_delay = 0) {
+  for (const [text, cls] of lines) {
+    let display = text;
+    if (corruption > 0 && Math.random() < 0.3) {
+      display = scramble(text, corruption * 0.08);
+    }
+    await printLine(display, cls, 22 + extra_delay);
+    sndClick();
+  }
+}
+
+function printUserLine(text) {
+  const span = createLine('> ' + text, 'go');
+  out.appendChild(span);
+  out.scrollTop = out.scrollHeight;
+}
+
+/* ────────── IP / LOCATION TRACE ────────── */
+const FAKE_IPS = ['192.168.14.77','10.0.0.34','172.16.44.122','198.51.100.87','203.0.113.45'];
+const FAKE_LOCS = ['LOS SANTOS','MIRROR PARK','SANDY SHORES','VINEWOOD HILLS','PALETO BAY'];
+let tracedIP = '---';
+let tracedLoc = '---';
+let traceTriggered = false;
+
+async function runIPTrace() {
+  if (traceTriggered) return;
+  traceTriggered = true;
+  const ipEl = $('ip-display');
+  const locEl = $('loc-display');
+
+  sndWarning();
+  await printLine('', 'bl');
+  await printLine('ALERTE : DÉTECTION D\'ACTIVITÉ SUSPECTE', 'r');
+  await printLine('LANCEMENT DU TRACÉ IP...', 'w');
+
+  // Animate IP discovery
+  for (let i = 0; i < 12; i++) {
+    ipEl.textContent = FAKE_IPS[randomInt(0, FAKE_IPS.length - 1)];
+    await sleep(80);
+  }
+  tracedIP = FAKE_IPS[randomInt(0, FAKE_IPS.length - 1)];
+  ipEl.textContent = tracedIP;
+  ipEl.style.color = 'var(--red)';
+
+  await printLine('IP TRACÉE : ' + tracedIP, 'r');
+
+  for (let i = 0; i < 8; i++) {
+    locEl.textContent = FAKE_LOCS[randomInt(0, FAKE_LOCS.length - 1)];
+    await sleep(100);
+  }
+  tracedLoc = FAKE_LOCS[randomInt(0, FAKE_LOCS.length - 1)];
+  locEl.textContent = tracedLoc;
+  locEl.style.color = 'var(--red)';
+
+  await printLine('LOCALISATION : ' + tracedLoc, 'r');
+  await printLine('VOUS AVEZ ÉTÉ IDENTIFIÉ.', 'r');
+  await printLine('', 'bl');
+}
+
+/* ────────── INTRUSION METER ────────── */
+function updateMeter() {
+  const pct = (intrusionLevel / INTRUSION_MAX) * 100;
+  const fill = $('meter-fill');
+  const val = $('meter-val');
+  const disp = $('intrusion-display');
+
+  fill.style.width = pct + '%';
+  val.textContent = intrusionLevel + '/' + INTRUSION_MAX;
+  disp.textContent = 'NIV.' + intrusionLevel;
+
+  if (intrusionLevel >= 6) {
+    fill.style.background = 'var(--red)';
+    fill.style.boxShadow = '0 0 10px var(--red)';
+    disp.style.color = 'var(--red)';
+  } else if (intrusionLevel >= 4) {
+    fill.style.background = 'var(--warn)';
+    fill.style.boxShadow = '0 0 8px var(--warn)';
+    disp.style.color = 'var(--warn)';
+  }
+}
+
+function addIntrusion(amount) {
+  intrusionLevel = Math.min(INTRUSION_MAX, intrusionLevel + amount);
+  updateMeter();
+}
+
+/* ────────── GLITCH PAGE ────────── */
+function glitchPage() {
+  const el = $('main');
+  el.classList.add('page-glitch');
+  setTimeout(() => el.classList.remove('page-glitch'), 150);
+}
+
+/* ────────── FAKE CURSOR ────────── */
+let fakeCurX = window.innerWidth / 2;
+let fakeCurY = window.innerHeight / 2;
+let fakeCurPhase = 0; // 0=approach 1=jitter 2=final push
+let fakeCurAnimId = null;
+const fakeCur = $('fake-cursor');
+
+// Track real cursor for fake to "start" from
+document.addEventListener('mousemove', e => {
+  if (!takeoverActive) {
+    fakeCurX = e.clientX;
+    fakeCurY = e.clientY;
+  }
+});
+
+function updateFakeCursorPos(x, y) {
+  fakeCur.style.left = x + 'px';
+  fakeCur.style.top = y + 'px';
+}
+
+function animateFakeCursor() {
+  if (fakeCurAnimId) cancelAnimationFrame(fakeCurAnimId);
+
+  const targetX = window.innerWidth - 23; // close button center
+  const targetY = 16;
+
+  let phase = 0;
+  let jitterCount = 0;
+  let startTime = null;
+
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = ts - startTime;
+
+    if (phase === 0) {
+      // Slow approach toward close button
+      const dx = targetX - fakeCurX;
+      const dy = targetY - fakeCurY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > 5) {
+        fakeCurX += dx * 0.02 + (Math.random() - 0.5) * 3;
+        fakeCurY += dy * 0.02 + (Math.random() - 0.5) * 3;
+        updateFakeCursorPos(fakeCurX, fakeCurY);
+      } else {
+        phase = 1; // start jitter (hesitation)
+        jitterCount = 0;
+      }
+      fakeCurAnimId = requestAnimationFrame(step);
+    } else if (phase === 1) {
+      // Jitter away then back — tension
+      if (jitterCount < 40) {
+        fakeCurX += (Math.random() - 0.5) * 8;
+        fakeCurY += (Math.random() - 0.5) * 8;
+        updateFakeCursorPos(fakeCurX, fakeCurY);
+        jitterCount++;
+        fakeCurAnimId = requestAnimationFrame(step);
+      } else {
+        phase = 2; // final push
+      }
+      fakeCurAnimId = requestAnimationFrame(step);
+    } else if (phase === 2) {
+      // Fast approach
+      const dx = targetX - fakeCurX;
+      const dy = targetY - fakeCurY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > 3) {
+        fakeCurX += dx * 0.06;
+        fakeCurY += dy * 0.06;
+        updateFakeCursorPos(fakeCurX, fakeCurY);
+        // Animate close bar progress
+        const progressPct = Math.max(0, Math.min(85, 85 * (1 - dist / (window.innerWidth * 0.6))));
+        $('close-bar-progress').style.width = progressPct + '%';
+        fakeCurAnimId = requestAnimationFrame(step);
+      }
+      // When close — animate stays at 85% (held back)
+    }
+  }
+  fakeCurAnimId = requestAnimationFrame(step);
+}
+
+/* ────────── TAKEOVER EVENT ────────── */
+const THREATENING_MESSAGES = [
+  'JE SAIS QUI TU ES.',
+  'JE SAIS OÙ TU HABITES.',
+  'ON SAIT TOUT DE TOI.',
+  'TU AS FAIT UNE ERREUR.',
+  'ON VA TE RETROUVER.',
+  'LE MARTEAU NE PARDONNE PAS.',
+  'TU AURAIS DÛ RESTER CHEZ TOI.',
+  'CETTE SESSION A ÉTÉ ENREGISTRÉE.',
+  'TES DONNÉES SONT ENTRE NOS MAINS.',
+  'IL EST DÉJÀ AU COURANT.',
+];
+
+async function takeoverEvent() {
+  if (takeoverActive) return;
+  takeoverActive = true;
+  inputLocked = true;
+
+  glitchPage();
+  sndAlarm();
+  $('main').classList.add('alert');
+
+  await sleep(400);
+
+  const tko = $('takeover');
+  tko.style.display = 'flex';
+
+  const tkoMsg = $('tko-msg');
+
+  // Phase 1 — threat messages
+  for (const msg of THREATENING_MESSAGES.slice(0, 5)) {
+    tkoMsg.textContent = msg;
+    sndWarning();
+    await sleep(900);
+    glitchPage();
+  }
+
+  // Phase 2 — start fake cursor
+  fakeCur.style.display = 'block';
+  document.body.style.cursor = 'none';
+  animateFakeCursor();
+
+  for (const msg of THREATENING_MESSAGES.slice(5)) {
+    tkoMsg.textContent = msg;
+    sndWarning();
+    await sleep(800);
+    glitchPage();
+  }
+
+  await sleep(500);
+  tkoMsg.textContent = 'SYSTÈME EN COURS DE FERMETURE — CONNEXION TERMINÉE DANS :';
+
+  // Phase 3 — countdown
+  const cdEl = $('countdown-display');
+  cdEl.style.display = 'block';
+
+  let seconds = 15;
+  const cdInterval = setInterval(() => {
+    seconds--;
+    cdEl.textContent = String(seconds);
+    sndTick();
+    if (seconds <= 5) cdEl.style.color = 'var(--red)';
+    if (seconds <= 0) clearInterval(cdInterval);
+  }, 1000);
+
+  await sleep(1200);
+
+  // Phase 4 — override input appears
+  $('override-wrap').style.display = 'flex';
+  const ov = $('override-input');
+  ov.disabled = false;
+  ov.focus();
+  ov.addEventListener('keydown', async e => {
+    if (e.key === 'Enter') {
+      const val = ov.value.trim().toUpperCase();
+      if (val === 'OVERRIDE') {
+        clearInterval(cdInterval);
+        await overrideSuccess();
+      } else {
+        ov.value = '';
+        ov.style.borderColor = 'var(--red)';
+        sndWarning();
+        glitchPage();
+        await sleep(300);
+        ov.style.borderColor = '';
+      }
+    }
+  });
+
+  // Wait for countdown to expire
+  await sleep(seconds * 1000 + 800);
+  if (takeoverActive && $('override-wrap').style.display !== 'none') {
+    clearInterval(cdInterval);
+    await rebootSequence();
+  }
+}
+
+async function overrideSuccess() {
+  if (!takeoverActive) return;
+
+  sndOverrideSuccess();
+  if (fakeCurAnimId) cancelAnimationFrame(fakeCurAnimId);
+  fakeCur.style.display = 'none';
+  document.body.style.cursor = '';
+  $('close-bar-progress').style.width = '0%';
+  $('takeover').style.display = 'none';
+  $('main').classList.remove('alert');
+  takeoverActive = false;
+  inputLocked = false;
+
+  await printLine('', 'bl');
+  await printLine('OVERRIDE ACCEPTÉ — CONNEXION RÉTABLIE', 'g');
+  await printLine('', 'bl');
+  await printLine('BONUS CLASSIFIÉ — ACCÈS EXCEPTIONNEL ACCORDÉ :', 'go');
+  await printLine('', 'bl');
+  await printLine('  MESSAGE PRIVÉ D\'ANTONOV (intercepté — date inconnue) :', 'gd');
+  await printLine('', 'bl');
+  await printLine('  "Je n\'ai pas construit l\'ISL pour gagner de l\'argent.', 'go');
+  await printLine('   Je l\'ai construit pour prouver quelque chose.', 'go');
+  await printLine('   Que dans ce monde de lâches et de règles inutiles,', 'go');
+  await printLine('   il reste encore des hommes qui savent ce que ça veut dire', 'go');
+  await printLine('   de tout risquer. Vraiment tout."', 'go');
+  await printLine('', 'bl');
+  await printLine('  [FIN DU MESSAGE]', 'gd');
+  await printLine('', 'bl');
+  await printLine('NIVEAU D\'INTRUSION RÉINITIALISÉ.', 'g');
+
+  intrusionLevel = 0;
+  updateMeter();
+
+  $('input-field').focus();
+}
+
+async function rebootSequence() {
+  sndReboot();
+  if (fakeCurAnimId) cancelAnimationFrame(fakeCurAnimId);
+  fakeCur.style.display = 'none';
+  $('takeover').style.display = 'none';
+  $('main').style.display = 'none';
+
+  const rb = $('reboot');
+  rb.style.display = 'flex';
+  const rbMsg = $('reboot-msg');
+  rbMsg.replaceChildren();
+
+  const rebootLines = [
+    ['CONNEXION TERMINÉE PAR LE SYSTÈME.', 'var(--red)'],
+    ['', ''],
+    ['VOTRE ADRESSE A ÉTÉ ENREGISTRÉE.', 'var(--warn)'],
+    ['VOTRE LOCALISATION A ÉTÉ TRANSMISE.', 'var(--warn)'],
+    ['', ''],
+    ['ANTONOV A ÉTÉ INFORMÉ.', 'var(--red)'],
+    ['', ''],
+    ['PROCHAINE FOIS...', 'var(--red-dim)'],
+    ['RESTEZ EN DEHORS DE CE QUI NE VOUS REGARDE PAS.', 'var(--red)'],
+  ];
+
+  for (const [txt, col] of rebootLines) {
+    await sleep(400);
+    const span = document.createElement('span');
+    span.style.display = 'block';
+    span.style.color = col;
+    span.textContent = txt;
+    rbMsg.appendChild(span);
+    if (txt) sndWarning();
+  }
+
+  await sleep(1500);
+  $('reboot-restart').style.display = 'block';
+}
+
+/* ────────── GREETING SHORT ────────── */
+async function handleGreetingShort() {
+  await printLines([
+    ['', 'bl'],
+    ['Identification reçue.', 'gd'],
+    ['Ce terminal n\'est pas un service de chat.', 'gd'],
+    ['Posez une question pertinente.', 'gd'],
+    ['Tapez /help pour les sujets disponibles.', 'gd'],
+    ['', 'bl'],
+  ], 0);
+}
+
+/* ────────── COMMAND HANDLER ────────── */
+async function handleCommand(raw) {
+  if (inputLocked) return;
+  if (!raw.trim()) return;
+
+  historyBuf.unshift(raw);
+  if (historyBuf.length > 30) historyBuf.pop();
+  historyIdx = -1;
+
+  printUserLine(raw);
+  inputLocked = true;
+  queries++;
+
+  const intent = detectIntent(raw);
+
+  // Special commands
+  if (intent === '__clear') {
+    out.replaceChildren();
+    inputLocked = false;
+    return;
+  }
+
+  if (intent === 'exit') {
+    await printLines(DB.exit.lines, 0);
+    await sleep(800);
+    window.history.back();
+    inputLocked = false;
+    return;
+  }
+
+  if (intent === 'greeting_short') {
+    await handleGreetingShort();
+    inputLocked = false;
+    return;
+  }
+
+  // Get response
+  const entry = DB[intent] || DB.unknown;
+  await printLines(entry.lines, entry.corruption);
+
+  // Intrusion escalation
+  if (intent !== 'help' && intent !== 'unknown') {
+    const inc = entry.corruption > 0 ? entry.corruption : 1;
+    addIntrusion(inc);
+  } else if (intent === 'unknown') {
+    addIntrusion(0.5);
+  }
+
+  // Threshold events
+  if (intrusionLevel >= 3 && intrusionLevel < 4 && !traceTriggered) {
+    await runIPTrace();
+  }
+
+  if (intrusionLevel >= 5 && intrusionLevel < 6) {
+    glitchPage();
+    sndWarning();
+    await printLine('AVERTISSEMENT : Niveau d\'intrusion critique. Réduisez votre activité.', 'r');
+    await printLine('', 'bl');
+  }
+
+  if (intrusionLevel >= INTRUSION_MAX && !takeoverActive) {
+    await sleep(300);
+    await takeoverEvent();
+    return;
+  }
+
+  inputLocked = false;
+  $('input-field').focus();
+}
+
+/* ────────── BOOT SEQUENCE ────────── */
+const BOOT_LINES = [
+  { text: 'ISL-SEC OS v4.7.1 — BUILD 20260413', cls: 'ok' },
+  { text: 'Chargement des modules de sécurité...', cls: '' },
+  { text: '[OK] Module de chiffrement AES-256 actif', cls: 'ok' },
+  { text: '[OK] Pare-feu niveau 5 initialisé', cls: 'ok' },
+  { text: '[OK] Connexion aux serveurs ISL établie', cls: 'ok' },
+  { text: '[WARN] Tentative d\'intrusion détectée ce jour — en surveillance', cls: 'warn' },
+  { text: '[OK] Base de données chargée — 847 fichiers classifiés', cls: 'ok' },
+  { text: '[OK] Terminal sécurisé prêt', cls: 'ok' },
+];
+
+async function runBoot() {
+  const container = $('boot-lines');
+
+  for (const bl of BOOT_LINES) {
+    await sleep(randomInt(120, 280));
+    const span = document.createElement('span');
+    span.className = 'boot-line ' + bl.cls;
+    span.textContent = bl.text;
+    container.appendChild(span);
+    span.style.opacity = '1';
+    sndClick();
+  }
+
+  // Loading bar
+  const barWrap = $('boot-bar-wrap');
+  barWrap.style.display = 'block';
+  const fill = $('boot-bar-fill');
+
+  for (let i = 0; i <= 100; i += randomInt(2, 6)) {
+    fill.style.width = Math.min(i, 100) + '%';
+    await sleep(randomInt(20, 50));
+  }
+  fill.style.width = '100%';
+  await sleep(200);
+
+  $('boot-enter').style.display = 'block';
+}
+
+function enterTerminal() {
+  initAudio();
+  $('boot').style.opacity = '0';
+  $('boot').style.transition = 'opacity 0.6s';
+  setTimeout(() => {
+    $('boot').style.display = 'none';
+    $('main').style.display = 'flex';
+    $('input-field').focus();
+    showWelcome();
+  }, 600);
+}
+
+async function showWelcome() {
+  await printLines(DB.greeting.lines, 0);
+  inputLocked = false;
+}
+
+/* ────────── INPUT HANDLING ────────── */
+const inputField = $('input-field');
+
+inputField.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const val = inputField.value;
+    inputField.value = '';
+    handleCommand(val);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    historyIdx = Math.min(historyIdx + 1, historyBuf.length - 1);
+    if (historyBuf[historyIdx] !== undefined) inputField.value = historyBuf[historyIdx];
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    historyIdx = Math.max(historyIdx - 1, -1);
+    inputField.value = historyIdx >= 0 ? historyBuf[historyIdx] : '';
+  }
+});
+
+// Keep focus
+document.addEventListener('click', () => {
+  if (!inputLocked) inputField.focus();
+});
+
+/* ────────── START ────────── */
+runBoot();
+</script>
+</body>
+</html>
